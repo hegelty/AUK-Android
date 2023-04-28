@@ -1,14 +1,17 @@
-package com.unrevr.munhaeryeok;
+package com.unrevr.munhaeryeok.Alarm;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class AlarmReciver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d("디버그", "알람 받음");
+        int id = intent.getIntExtra("id", 0);
 
         Intent alarm_indent = new Intent(context, AlarmService.class);
         alarm_indent.putExtra("text", "알람");
@@ -17,7 +20,6 @@ public class AlarmReciver extends BroadcastReceiver {
         context.startService(alarm_indent);
 
         AlarmController alarmController = new AlarmController(context.getApplicationContext());
-        int id = intent.getIntExtra("id", 0);
         if(id!=0) alarmController.setAlarmAgain(id);
     }
 }

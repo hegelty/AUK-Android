@@ -10,6 +10,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 
+import com.unrevr.munhaeryeok.Alarm.AlarmController;
+
 import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {

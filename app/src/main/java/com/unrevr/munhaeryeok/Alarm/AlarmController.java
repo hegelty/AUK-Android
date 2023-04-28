@@ -1,4 +1,4 @@
-package com.unrevr.munhaeryeok;
+package com.unrevr.munhaeryeok.Alarm;
 
 import static android.content.Context.ALARM_SERVICE;
 import static android.content.Context.MODE_PRIVATE;
@@ -20,7 +20,7 @@ public class AlarmController {
         this.pref  = context.getSharedPreferences("alarm", MODE_PRIVATE);
     }
 
-    void setAlarm(int d, int h, int m, int s, int id) {
+    public void setAlarm(int d, int h, int m, int s, int id) {
         // id = 0 이면 새로운 알람 생성
         Intent intent = new Intent(context, AlarmReciver.class);
 
@@ -37,6 +37,7 @@ public class AlarmController {
         }
 
         intent.putExtra("id", id);
+        intent.putExtra("time", h + ":" + m + ":" + s);
         PendingIntent pendingIntent =
                 PendingIntent.getBroadcast(
                         context,
