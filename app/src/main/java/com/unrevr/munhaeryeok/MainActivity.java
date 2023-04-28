@@ -21,8 +21,9 @@ public class MainActivity extends AppCompatActivity {
         checkFirstRun();
         getOverlayPermission();
 
-        AlarmController alarmManager = new AlarmController();
-        alarmManager.setAlarm(Calendar.THURSDAY, 20, 44, 0);
+        AlarmController alarmManager = new AlarmController(getApplicationContext());
+        alarmManager.setAlarm(Calendar.SATURDAY, 00, 11, 0, 0);
+        alarmManager.setAlarm(Calendar.SATURDAY, 00, 14, 0, 0);
     }
 
     void checkFirstRun() {

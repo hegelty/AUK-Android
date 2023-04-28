@@ -16,8 +16,8 @@ public class AlarmReciver extends BroadcastReceiver {
         alarm_indent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startService(alarm_indent);
 
-        AlarmController alarmController = new AlarmController();
+        AlarmController alarmController = new AlarmController(context.getApplicationContext());
         int id = intent.getIntExtra("id", 0);
-        alarmController.setAlarmAgain(id);
+        if(id!=0) alarmController.setAlarmAgain(id);
     }
 }
