@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.widget.Button;
 
 import com.unrevr.munhaeryeok.Alarm.AlarmController;
 
@@ -24,8 +25,16 @@ public class MainActivity extends AppCompatActivity {
         getOverlayPermission();
 
         AlarmController alarmManager = new AlarmController(getApplicationContext());
-        alarmManager.setAlarm(Calendar.SATURDAY, 00, 11, 0, 0);
-        alarmManager.setAlarm(Calendar.SATURDAY, 00, 14, 0, 0);
+        //int id1 = alarmManager.setAlarm(Calendar.MONDAY, 16, 20, 0, 0, "a1");
+        //int id2 = alarmManager.setAlarm(Calendar.MONDAY, 16, 20, 20, 0, "a2");
+        //alarmManager.deleteAlarm(id2);
+        //alarmManager.setAlarm(Calendar.MONDAY, 16, 20, 40, 0, "a3");
+
+        Button newAlarmButton = findViewById(R.id.NewAlarmButton);
+        newAlarmButton.setOnClickListener(v -> {
+            Intent intent = new Intent(getApplicationContext(), AlarmSettingActivity.class);
+            startActivity(intent);
+        });
     }
 
     void checkFirstRun() {

@@ -20,7 +20,8 @@ public class AlarmService extends Service {
 
     private void showAlarm() {
         Intent intent = new Intent(this, AlarmActivity.class);
-        intent.putExtra("text", "알람");
+        String memo = intent.getStringExtra("memo");
+        intent.putExtra("text", memo);
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);

@@ -12,9 +12,12 @@ public class AlarmReciver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         int id = intent.getIntExtra("id", 0);
+        String memo = intent.getStringExtra("memo");
+
+        Log.d("AlarmReciver", "onReceive: " + id);
 
         Intent alarm_indent = new Intent(context, AlarmService.class);
-        alarm_indent.putExtra("text", "알람");
+        alarm_indent.putExtra("text", memo);
         alarm_indent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         alarm_indent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startService(alarm_indent);
