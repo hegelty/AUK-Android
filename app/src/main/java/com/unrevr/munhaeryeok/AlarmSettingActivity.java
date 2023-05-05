@@ -1,44 +1,301 @@
 package com.unrevr.munhaeryeok;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.TimePicker;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.material.textfield.TextInputEditText;
+import com.skydoves.expandablelayout.ExpandableLayout;
 import com.unrevr.munhaeryeok.Alarm.AlarmController;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class AlarmSettingActivity extends AppCompatActivity {
+    int id;
+    SharedPreferences pref;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.alarm_setting_layout);
-        // 알람 설정 화면
+        pref = getSharedPreferences("alarm_data", MODE_PRIVATE);
 
+        this.id = getIntent().getIntExtra("id", 0);
+        if(id!=0) {
+            loadAlarm(id);
+        }
+
+        setButton();
+        setExpandableLayout();
+    }
+
+    // EditText에서 포커스 풀리면 키보드 숨기기
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        View view = getCurrentFocus();
+        if (view != null && (ev.getAction() == MotionEvent.ACTION_UP || ev.getAction() == MotionEvent.ACTION_MOVE) && view instanceof EditText && !view.getClass().getName().startsWith("android.webkit.")) {
+            int scrcoords[] = new int[2];
+            view.getLocationOnScreen(scrcoords);
+            float x = ev.getRawX() + view.getLeft() - scrcoords[0];
+            float y = ev.getRawY() + view.getTop() - scrcoords[1];
+            if (x < view.getLeft() || x > view.getRight() || y < view.getTop() || y > view.getBottom()) {
+                ((InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow((this.getWindow().getDecorView().getApplicationWindowToken()), 0);
+                EditText editText = findViewById(R.id.nameEditText);
+                editText.clearFocus();
+            }
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+    // 버튼 동작 설정
+    void setButton() {
         Button confirmButton = findViewById(R.id.ConfirmButton);
         confirmButton.setOnClickListener(v -> {
+            EditText nameEditText = findViewById(R.id.nameEditText);
+            String name = nameEditText.getText().toString();
+            if(name.trim().length()==0) {
+                new AlertDialog.Builder(this)
+                        .setTitle("오류")
+                        .setMessage("알람 이름을 입력해주세요.")
+                        .setPositiveButton("확인", (dialog, which) -> {
+                        }).show();
+            }
+            ExpandableLayout dayExpandableLayout = findViewById(R.id.dayExpandableLayout);
+            TextView dayTextView = dayExpandableLayout.parentLayout.findViewById(R.id.daySetTextView);
+            String day = dayTextView.getText().toString();
+            if(day.trim().length()==0) {
+                new AlertDialog.Builder(this)
+                        .setTitle("오류")
+                        .setMessage("요일을 선택해주세요.")
+                        .setPositiveButton("확인", (dialog, which) -> {
+                        }).show();
+                return;
+            }
+
+            ExpandableLayout soundExpandableLayout = findViewById(R.id.soundExpandableLayout);
+            TextView soundTextView = soundExpandableLayout.parentLayout.findViewById(R.id.soundSetTextView);
+            String sound = soundTextView.getText().toString();
+            if(sound.trim().length()==0) {
+                new AlertDialog.Builder(this)
+                        .setTitle("오류")
+                        .setMessage("알람 소리를 선택해주세요.")
+                        .setPositiveButton("확인", (dialog, which) -> {
+                        }).show();
+                return;
+            }
+
+            ExpandableLayout problemExpandableLayout = findViewById(R.id.problemExpandableLayout);
+            TextView problemTextView = problemExpandableLayout.parentLayout.findViewById(R.id.problemSetTextView);
+            String problem = problemTextView.getText().toString();
+            if(problem.trim().length()==0) {
+                new AlertDialog.Builder(this)
+                        .setTitle("오류")
+                        .setMessage("문제를 선택해주세요.")
+                        .setPositiveButton("확인", (dialog, which) -> {
+                        }).show();
+                return;
+            }
+
+            if (setAlarm()) {
+                finish();
+            }
+            new AlertDialog.Builder(this)
+                    .setTitle("오류")
+                    .setMessage("알람 설정에 실패하였습니다.")
+                    .setPositiveButton("확인", (dialog, which) -> {
+                    });
+        });
+
+        Button deleteButton = findViewById(R.id.deleteButton);
+        deleteButton.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("알람 삭제")
+                    .setMessage("알람을 삭제하시겠습니까?")
+                    .setPositiveButton("확인", (dialog, which) -> {
+                        if(deleteAlarm(id)) {
+                            finish();
+                        } else {
+                            new AlertDialog.Builder(this)
+                                    .setTitle("오류")
+                                    .setMessage("알람 삭제에 실패하였습니다.")
+                                    .setPositiveButton("확인", (dialog1, which1) -> {
+                                    });
+                        }
+                    })
+                    .setNegativeButton("취소", (dialog, which) -> {
+                    })
+                    .show();
+        });
+
+        Button backwardButton = findViewById(R.id.backwardButton);
+        backwardButton.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("알람 설정 취소")
+                    .setMessage("알람 설정을 취소하시겠습니까?")
+                    .setPositiveButton("확인", (dialog, which) -> {
+                        finish();
+                    })
+                    .setNegativeButton("취소", (dialog, which) -> {
+                    })
+                    .show();
+        });
+    }
+
+    // ExpandableLayout
+    void setExpandableLayout() {
+        ExpandableLayout dayExpandableLayout = findViewById(R.id.dayExpandableLayout);
+        ExpandableLayout soundExpandableLayout = findViewById(R.id.soundExpandableLayout);
+        ExpandableLayout problemExpandableLayout = findViewById(R.id.problemExpandableLayout);
+
+        dayExpandableLayout.setOnClickListener(v -> {
+            if(dayExpandableLayout.isExpanded()) {
+                CheckBox[] dayCheckBox = new CheckBox[7];
+                dayCheckBox[1] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxMonday));
+                dayCheckBox[2] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxTuesday));
+                dayCheckBox[3] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxWednesday));
+                dayCheckBox[4] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxThursday));
+                dayCheckBox[5] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxFriday));
+                dayCheckBox[6] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSaturday));
+                dayCheckBox[0] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSunday));
+
+                String days = "";
+                String[] dayString = {"일", "월", "화", "수", "목", "금", "토"};
+                for(int i=0; i<7; i++) {
+                    if(dayCheckBox[i].isChecked()) {
+                        if(days!="") days += ", " + dayString[i];
+                        else days = dayString[i];
+                    }
+                }
+                if(dayCheckBox[1].isChecked()&&dayCheckBox[2].isChecked()&&dayCheckBox[3].isChecked()&&dayCheckBox[4].isChecked()&&dayCheckBox[5].isChecked()&&!dayCheckBox[6].isChecked()&&!dayCheckBox[0].isChecked()) {
+                    days = "주중";
+                    dayExpandableLayout.toggleLayout();
+                }
+                else if(dayCheckBox[0].isChecked()&&dayCheckBox[6].isChecked()&&dayCheckBox[1].isChecked()&&dayCheckBox[2].isChecked()&&dayCheckBox[3].isChecked()&&dayCheckBox[4].isChecked()&&dayCheckBox[5].isChecked()) {
+                    days = "매일";
+                    dayExpandableLayout.toggleLayout();
+                }
+                else if(dayCheckBox[0].isChecked()|dayCheckBox[6].isChecked()|dayCheckBox[1].isChecked()|dayCheckBox[2].isChecked()|dayCheckBox[3].isChecked()|dayCheckBox[4].isChecked()|dayCheckBox[5].isChecked()) {
+                    dayExpandableLayout.toggleLayout();
+                }
+
+                TextView dayTextView = dayExpandableLayout.parentLayout.findViewById(R.id.daySetTextView);
+                dayTextView.setText(days);
+            }
+            else {
+                dayExpandableLayout.toggleLayout();
+                TextView dayTextView = dayExpandableLayout.parentLayout.findViewById(R.id.daySetTextView);
+                dayTextView.setText("");
+            }
+        });
+
+        soundExpandableLayout.setOnClickListener(v -> {
+            if(soundExpandableLayout.isExpanded()) {
+                soundExpandableLayout.toggleLayout();
+                CheckBox soundCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.soundCheckBox);
+                CheckBox vibrationCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.vibrationCheckBox);
+                TextView soundTextView = soundExpandableLayout.parentLayout.findViewById(R.id.soundSetTextView);
+
+                if(soundCheckBox.isChecked()) {
+                    if(vibrationCheckBox.isChecked()) {
+                        soundTextView.setText("소리 + 진동");
+                    }
+                    else {
+                        soundTextView.setText("소리");
+                    }
+                }
+                else {
+                    if(vibrationCheckBox.isChecked()) {
+                        soundTextView.setText("진동");
+                    }
+                    else {
+                        soundTextView.setText("무음");
+                    }
+                }
+            }
+            else {
+                soundExpandableLayout.toggleLayout();
+                TextView soundTextView = soundExpandableLayout.parentLayout.findViewById(R.id.soundSetTextView);
+                soundTextView.setText("");
+            }
+        });
+
+        problemExpandableLayout.setOnClickListener(v -> {
+            if(problemExpandableLayout.isExpanded()) {
+                CheckBox mcCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.mcCheckBox);
+                CheckBox sfCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.sfCheckBox);
+                TextView problemTextView = problemExpandableLayout.parentLayout.findViewById(R.id.problemSetTextView);
+
+                if (mcCheckBox.isChecked()) {
+                    if (sfCheckBox.isChecked()) {
+                        problemTextView.setText("객관식 + 주관식");
+                        problemExpandableLayout.toggleLayout();
+                    } else {
+                        problemTextView.setText("객관식");
+                        problemExpandableLayout.toggleLayout();
+                    }
+                } else {
+                    if (sfCheckBox.isChecked()) {
+                        problemTextView.setText("주관식");
+                        problemExpandableLayout.toggleLayout();
+                    } else {
+                        problemTextView.setText("");
+                    }
+                }
+            }
+            else {
+                problemExpandableLayout.toggleLayout();
+                TextView problemTextView = problemExpandableLayout.parentLayout.findViewById(R.id.problemSetTextView);
+                problemTextView.setText("");
+            }
+        });
+    }
+
+    int createID() {
+        int id = pref.getInt("last_id", 0);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putInt("last_id", id+1);
+        editor.apply();
+        return id;
+    }
+
+    boolean setAlarm() {
+        try {
+            if(id==0) id = createID();
+
+            ExpandableLayout dayExpandableLayout = findViewById(R.id.dayExpandableLayout);
+            ExpandableLayout soundExpandableLayout = findViewById(R.id.soundExpandableLayout);
+            ExpandableLayout problemExpandableLayout = findViewById(R.id.problemExpandableLayout);
+            
             TimePicker timePicker = findViewById(R.id.timePicker);
             int h = timePicker.getHour();
             int m = timePicker.getMinute();
 
             CheckBox[] dayCheckBox = new CheckBox[7];
-            dayCheckBox[1] = (findViewById(R.id.checkBoxMonday));
-            dayCheckBox[2] = (findViewById(R.id.checkBoxTuesday));
-            dayCheckBox[3] = (findViewById(R.id.checkBoxWednesday));
-            dayCheckBox[4] = (findViewById(R.id.checkBoxThursday));
-            dayCheckBox[5] = (findViewById(R.id.checkBoxFriday));
-            dayCheckBox[6] = (findViewById(R.id.checkBoxSaturday));
-            dayCheckBox[0] = (findViewById(R.id.checkBoxSunday));
+            dayCheckBox[1] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxMonday));
+            dayCheckBox[2] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxTuesday));
+            dayCheckBox[3] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxWednesday));
+            dayCheckBox[4] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxThursday));
+            dayCheckBox[5] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxFriday));
+            dayCheckBox[6] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSaturday));
+            dayCheckBox[0] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSunday));
 
-            Switch soundSwitch = findViewById(R.id.soundSwitch);
-            Switch vibrationSwitch = findViewById(R.id.vibrationSwitch);
+            CheckBox soundCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.soundCheckBox);
+            CheckBox vibrationCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.vibrationCheckBox);
+            
+            CheckBox mcCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.mcCheckBox); // 객관
+            CheckBox sfCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.sfCheckBox); // 주관
+            
+            int problem_type = 0; // 1: 객관, 2: 주관, 3: 전부
+            if(mcCheckBox.isChecked()) problem_type += 1;
+            if(sfCheckBox.isChecked()) problem_type += 2;
 
             EditText nameEditText = findViewById(R.id.nameEditText);
             String name = nameEditText.getText().toString();
@@ -47,17 +304,122 @@ public class AlarmSettingActivity extends AppCompatActivity {
             boolean favorite = favoriteCheckBox.isChecked();
 
             AlarmController alarmController = new AlarmController(getApplicationContext());
+
+            int[] days = new int[7];
+
             for(int i = 0; i < 7; i++) {
                 if(dayCheckBox[i].isChecked()) {
-                    alarmController.setAlarm(i+1, h, m, 0, 0,
-                            soundSwitch.isActivated(), vibrationSwitch.isActivated(), name, problem_type, favorite);
+                    int id = alarmController.setAlarm(i+1, h, m, 0, 0,
+                            soundCheckBox.isActivated(), vibrationCheckBox.isActivated(), name, problem_type, favorite);
+                    days[i] = id;
                 }
             }
-        });
 
-        Button cancelButton = findViewById(R.id.CancelButton);
-        cancelButton.setOnClickListener(v -> {
-            finish();
-        });
+            AlarmData alarmData = new AlarmData(id, h, m, days, soundCheckBox.isActivated(), vibrationCheckBox.isActivated(), name, problem_type, favorite);
+            saveAlarm(alarmData);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
+    boolean deleteAlarm(int id) {
+        try {
+            if(id!=0) {
+                AlarmData alarmData = new AlarmData(id, 0, 0, new int[7], false, false, "", 0, false);
+
+                SharedPreferences.Editor editor = pref.edit();
+
+                String original = pref.getString("alarms_list", "");
+                String[] list = original.split("\n");
+                String new_list = "";
+                for(String s : list) {
+                    if(Integer.parseInt(s.split("-")[0]) == id) continue;
+                    new_list += s + "\n";
+                }
+                editor.putString("alarms_list", new_list);
+                editor.apply();
+
+                AlarmController alarmController = new AlarmController(getApplicationContext());
+                for(int i=0;i<7;i++) {
+                    if(alarmData.alarm_ids[i]!=0) {
+                        alarmController.deleteAlarm(alarmData.alarm_ids[i]);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
+    void saveAlarm(AlarmData alarmData) {
+        SharedPreferences.Editor editor = pref.edit();
+        String original = pref.getString("alarms_list", "").trim();
+        editor.putString("alarms_list", original + "\n" + alarmData.toString());
+        editor.apply();
+    }
+
+    AlarmData getAlarmData(int id) {
+        String original = pref.getString("alarms_list", "");
+        String[] list = original.split("\n");
+        for(String s : list) {
+            if(Integer.parseInt(s.split("-")[0]) == id) {
+                return new AlarmData(s);
+            }
+        }
+        return null;
+    }
+
+    void loadAlarm(int id) {
+        AlarmController alarmController = new AlarmController(getApplicationContext());
+        AlarmData alarmData = getAlarmData(id);
+
+        ExpandableLayout dayExpandableLayout = findViewById(R.id.dayExpandableLayout);
+        ExpandableLayout soundExpandableLayout = findViewById(R.id.soundExpandableLayout);
+        ExpandableLayout problemExpandableLayout = findViewById(R.id.problemExpandableLayout);
+
+        TimePicker timePicker = findViewById(R.id.timePicker);
+        timePicker.setHour(alarmData.h);
+        timePicker.setMinute(alarmData.m);
+
+        CheckBox[] dayCheckBox = new CheckBox[7];
+        dayCheckBox[1] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxMonday));
+        dayCheckBox[2] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxTuesday));
+        dayCheckBox[3] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxWednesday));
+        dayCheckBox[4] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxThursday));
+        dayCheckBox[5] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxFriday));
+        dayCheckBox[6] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSaturday));
+        dayCheckBox[0] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSunday));
+
+        for (int i=0;i<7;i++) {
+            if(alarmData.alarm_ids[i]!=0) {
+                dayCheckBox[i].setChecked(true);
+            }
+        }
+
+        CheckBox soundCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.soundCheckBox);
+        CheckBox vibrationCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.vibrationCheckBox);
+
+        soundCheckBox.setChecked(alarmData.sound);
+        vibrationCheckBox.setChecked(alarmData.vibration);
+
+        CheckBox mcCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.mcCheckBox); // 객관
+        CheckBox sfCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.sfCheckBox); // 주관
+
+        if(alarmData.problem_type == 1) {
+            mcCheckBox.setChecked(true);
+        } else if(alarmData.problem_type == 2) {
+            sfCheckBox.setChecked(true);
+        } else if(alarmData.problem_type == 3) {
+            mcCheckBox.setChecked(true);
+            sfCheckBox.setChecked(true);
+        }
+
+        EditText nameEditText = findViewById(R.id.nameEditText);
+        nameEditText.setText(alarmData.name);
+
+        CheckBox favoriteCheckBox = findViewById(R.id.favoriteCheckBox);
+        favoriteCheckBox.setChecked(alarmData.favorite);
     }
 }

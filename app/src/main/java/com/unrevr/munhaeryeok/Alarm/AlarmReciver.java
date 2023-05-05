@@ -5,9 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 public class AlarmReciver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {

@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import java.util.Calendar;
 
@@ -59,6 +60,9 @@ public class AlarmController {
 
         Alarm alarm = new Alarm(id, d, h, m, s, sound, vibration, name, problem_type, favorite);
         saveAlarm(alarm);
+
+        Log.d("AlarmController", "setAlarm: " + id + "\n" + pref.getString("alarm_list", ""));
+
         return id;
     }
 
@@ -110,7 +114,7 @@ public class AlarmController {
         return true;
     }
 
-    Alarm getAlarm(int id) {
+    public Alarm getAlarm(int id) {
         String original = pref.getString("alarm_list", "");
         String[] list = original.split("\n");
         for(String s : list) {
@@ -120,16 +124,6 @@ public class AlarmController {
             }
         }
         return null;
-    }
-
-    Alarm[] getAlarmList() {
-        String original = pref.getString("alarm_list", "");
-        String[] list = original.split("\n");
-        Alarm[] alarms = new Alarm[list.length];
-        for(int i=0; i<list.length; i++) {
-            alarms[i] = new Alarm(list[i]);
-        }
-        return alarms;
     }
 }
 
@@ -176,19 +170,22 @@ class Alarm {
         String[] t = s.split("-");
         this.id = Integer.parseInt(t[0]);
         this.time = t[1];
-        this.name = t[2];
         String[] tt = time.split(":");
         this.d = Integer.parseInt(tt[0]);
         this.h = Integer.parseInt(tt[1]);
         this.m = Integer.parseInt(tt[2]);
-        this.s = Integer.parseInt(tt[3].split("/|")[0]);
-        this.sound = Integer.parseInt(tt[3].split("/|")[1]) == 1;
-        this.vibration =  Integer.parseInt(tt[3].split("/|")[2]) == 1;
-        this.problem_type = Integer.parseInt(tt[3].split("/|")[3]);
-        this.favorite = Integer.parseInt(tt[3].split("/|")[4]) == 1;
+        this.s = Integer.parseInt(tt[3]);
+        Log.d("debug", t[2]);
+        String[] ttt = t[2].split("\\|");
+        Log.d("debug", ttt[0] + " " + ttt[1] + " " + ttt[2] + " " + ttt[3] + " " + ttt[4]);
+        this.name = ttt[0];
+        this.sound = Integer.parseInt(ttt[1]) == 1;
+        this.vibration = Integer.parseInt(ttt[2]) == 1;
+        this.problem_type = Integer.parseInt(ttt[3]);
+        this.favorite = Integer.parseInt(ttt[4]) == 1;
     }
 
     public String toString() {
-        return id + "-" + time + "-" + name + "|" + (sound ? "1":"0") + "|" + (vibration ? "1":"0") + "|" + problem_type + "|" + (favorite ? "1":"0");
+        return id + "-" + time + "-" + name + "|" + (sound ? "1" : "0") + "|" + (vibration ? "1" : "0") + "|" + problem_type + "|" + (favorite ? "1" : "0");
     }
 }

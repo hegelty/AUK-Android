@@ -18,6 +18,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Munhaeryeok"
+        android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
         tools:targetApi="31">
         <activity
             android:name=".Alarm.AlarmActivity"
@@ -31,6 +32,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".AlarmSettingActivity" />
+        <activity android:name=".alarm_list.AlarmListActivity" />
 
         <service android:name=".Alarm.AlarmService" />
         <receiver android:name=".Alarm.AlarmReciver"/>
