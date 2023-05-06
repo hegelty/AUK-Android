@@ -111,7 +111,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
                     .setTitle("오류")
                     .setMessage("알람 설정에 실패하였습니다.")
                     .setPositiveButton("확인", (dialog, which) -> {
-                    });
+                    }).show();
         });
 
         Button deleteButton = findViewById(R.id.deleteButton);
@@ -127,7 +127,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
                                     .setTitle("오류")
                                     .setMessage("알람 삭제에 실패하였습니다.")
                                     .setPositiveButton("확인", (dialog1, which1) -> {
-                                    });
+                                    }).show();
                         }
                     })
                     .setNegativeButton("취소", (dialog, which) -> {
@@ -263,12 +263,13 @@ public class AlarmSettingActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = pref.edit();
         editor.putInt("last_id", id+1);
         editor.apply();
-        return id;
+        return id + 1;
     }
 
     boolean setAlarm() {
-        try {
+//        try {
             if(id==0) id = createID();
+            else deleteAlarm(id);
 
             ExpandableLayout dayExpandableLayout = findViewById(R.id.dayExpandableLayout);
             ExpandableLayout soundExpandableLayout = findViewById(R.id.soundExpandableLayout);
@@ -317,14 +318,14 @@ public class AlarmSettingActivity extends AppCompatActivity {
 
             AlarmData alarmData = new AlarmData(id, h, m, days, soundCheckBox.isActivated(), vibrationCheckBox.isActivated(), name, problem_type, favorite);
             saveAlarm(alarmData);
-        } catch (Exception e) {
-            return false;
-        }
+//        } catch (Exception e) {
+//            return false;
+//        }
         return true;
     }
 
     boolean deleteAlarm(int id) {
-        try {
+//        try {
             if(id!=0) {
                 AlarmData alarmData = new AlarmData(id, 0, 0, new int[7], false, false, "", 0, false);
 
@@ -334,7 +335,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
                 String[] list = original.split("\n");
                 String new_list = "";
                 for(String s : list) {
-                    if(Integer.parseInt(s.split("-")[0]) == id) continue;
+                    if(Integer.parseInt(s.split("\\|")[0]) == id) continue;
                     new_list += s + "\n";
                 }
                 editor.putString("alarms_list", new_list);
@@ -347,9 +348,10 @@ public class AlarmSettingActivity extends AppCompatActivity {
                     }
                 }
             }
-        } catch (Exception e) {
-            return false;
-        }
+//        } catch (Exception e) {
+//            Log.e("deleteAlarm", e.toString());
+//            return false;
+//        }
         return true;
     }
 
@@ -364,7 +366,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
         String original = pref.getString("alarms_list", "");
         String[] list = original.split("\n");
         for(String s : list) {
-            if(Integer.parseInt(s.split("-")[0]) == id) {
+            if(Integer.parseInt(s.split("\\|")[0]) == id) {
                 return new AlarmData(s);
             }
         }

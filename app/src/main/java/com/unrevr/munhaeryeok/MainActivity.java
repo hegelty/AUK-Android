@@ -22,21 +22,7 @@ public class MainActivity extends AppCompatActivity {
         checkFirstRun();
         getOverlayPermission();
 
-        //AlarmController alarmManager = new AlarmController(getApplicationContext());
-        //int id1 = alarmManager.setAlarm(Calendar.MONDAY, 16, 20, 0, 0, "a1");
-        //int id2 = alarmManager.setAlarm(Calendar.MONDAY, 16, 20, 20, 0, "a2");
-        //alarmManager.deleteAlarm(id2);
-        //alarmManager.setAlarm(Calendar.MONDAY, 16, 20, 40, 0, "a3");
-
-        Button newAlarmButton = findViewById(R.id.newAlarmButton);
-        newAlarmButton.setOnClickListener(v -> {
-            Intent intent = new Intent(getApplicationContext(), AlarmSettingActivity.class);
-            intent.putExtra("id", 0);
-            startActivity(intent);
-        });
-
-        Button alarmListButton = findViewById(R.id.listButton);
-        alarmListButton.setOnClickListener(v -> {
+        findViewById(R.id.listButton).setOnClickListener(v -> {
             Intent intent = new Intent(getApplicationContext(), AlarmListActivity.class);
             startActivity(intent);
         });

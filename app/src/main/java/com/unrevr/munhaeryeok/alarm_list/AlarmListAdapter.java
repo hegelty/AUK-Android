@@ -3,6 +3,7 @@ package com.unrevr.munhaeryeok.alarm_list;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
@@ -16,6 +17,20 @@ import java.util.ArrayList;
 
 public class AlarmListAdapter extends RecyclerView.Adapter<AlarmListAdapter.ViewHolder> {
     private ArrayList<AlarmData> alarmItems;
+
+    // onclick listener
+    public interface OnItemClickListener {
+        void onItemClick(View v, int position);
+    }
+    private OnItemClickListener onItemClickListener;
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.onItemClickListener = listener;
+    }
+
+    // adaptor
+    AlarmListAdapter(ArrayList<AlarmData> alarmItems) {
+        this.alarmItems = alarmItems;
+    }
 
     @NonNull
     @Override
@@ -34,11 +49,6 @@ public class AlarmListAdapter extends RecyclerView.Adapter<AlarmListAdapter.View
         return alarmItems.size();
     }
 
-    public void setAlarmItems(ArrayList<AlarmData> alarmItems) {
-        this.alarmItems = alarmItems;
-        notifyDataSetChanged();
-    }
-
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView nameTextView;
         TextView timeTextView;
@@ -53,6 +63,15 @@ public class AlarmListAdapter extends RecyclerView.Adapter<AlarmListAdapter.View
             amfmTextView = itemView.findViewById(R.id.amfmTextView);
             favoriteCheckBox = itemView.findViewById(R.id.favoriteCheckBox);
             dayTextView = itemView.findViewById(R.id.dayTextView);
+
+            parent.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    if(onItemClickListener != null) {
+                        onItemClickListener.onItemClick(v, position);
+                    }
+                }
+            });
         }
 
         void onBind(AlarmData alarmData) {
@@ -63,14 +82,14 @@ public class AlarmListAdapter extends RecyclerView.Adapter<AlarmListAdapter.View
                 if(h==12) {
                     timeTextView.setText("12:" + String.format("%02d",alarmData.m));
                 } else {
-                    timeTextView.setText(String.format("%02d",alarmData.h%12) + ";" + String.format("%02d",alarmData.m));
+                    timeTextView.setText(String.format("%02d",alarmData.h%12) + ": " + String.format("%02d",alarmData.m));
                 }
             } else {
                 amfmTextView.setText("AM");
                 if(h==0) {
                     timeTextView.setText("12:" + String.format("%02d",alarmData.m));
                 } else {
-                    timeTextView.setText(String.format("%02d",alarmData.h) + ";" + String.format("%02d",alarmData.m));
+                    timeTextView.setText(String.format("%02d",alarmData.h) + ":" + String.format("%02d",alarmData.m));
                 }
             }
             String days = "";

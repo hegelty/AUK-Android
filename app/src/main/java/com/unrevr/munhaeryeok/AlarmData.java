@@ -3,7 +3,7 @@ package com.unrevr.munhaeryeok;
 import android.util.Log;
 
 public class AlarmData {
-    int id;
+    public int id;
     public int[] alarm_ids = {0, 0, 0, 0, 0, 0, 0};
     public int h;
     public int m;
