@@ -16,6 +16,7 @@ import com.unrevr.munhaeryeok.R;
 import java.util.ArrayList;
 
 public class AlarmListActivity extends AppCompatActivity {
+    AlarmListAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,22 +32,18 @@ public class AlarmListActivity extends AppCompatActivity {
         findViewById(R.id.addButton).setOnClickListener(v -> {
             Intent intent = new Intent(this, AlarmSettingActivity.class);
             startActivity(intent);
-            setRecyclerView();
         });
     }
 
     void setRecyclerView() {
         RecyclerView recyclerView = findViewById(R.id.alarmRecyclerView);
         recyclerView.setAdapter(null);
-        AlarmListAdapter adapter;
         SharedPreferences pref = getSharedPreferences("alarm_data", MODE_PRIVATE);
         String original = pref.getString("alarms_list", "").trim();
-        Log.d("debug", original);
         ArrayList<AlarmData> alarmDataList = new ArrayList<>();
         if(original != "") {
             String[] list = original.split("\n");
             for (String s : list) {
-                Log.d("show", s);
                 alarmDataList.add(new AlarmData(s));
             }
             adapter = new AlarmListAdapter(alarmDataList);
@@ -60,10 +57,14 @@ public class AlarmListActivity extends AppCompatActivity {
 
         adapter.setOnItemClickListener((view, position) -> {
             Intent intent = new Intent(this, AlarmSettingActivity.class);
-            Log.d("debug", "id: " + alarmDataList.get(position).id);
             intent.putExtra("id", alarmDataList.get(position).id);
             startActivity(intent);
-            setRecyclerView();
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setRecyclerView();
     }
 }

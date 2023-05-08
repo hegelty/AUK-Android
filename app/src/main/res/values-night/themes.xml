@@ -3,5 +3,12 @@
     <style name="Base.Theme.Munhaeryeok" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="android:windowBackground">#f6f6f6</item>
+    </style>
+
+    <style name="CustomTimePicker">
+        <item name="android:timePickerMode">spinner</item>
+        <item name="android:textColorPrimary">#ffffff</item>
+        <item name="android:textSize">24sp</item>
     </style>
 </resources>

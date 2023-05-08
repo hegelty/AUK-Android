@@ -38,12 +38,16 @@ public class AlarmController {
             deleteAlarm(id);
         }
 
-        intent.putExtra("id", id);
-        intent.putExtra("time", h + ":" + m + ":" + s);
+        intent.putExtra("alarm", id);
+        intent.putExtra("h", h);
+        intent.putExtra("m", m);
         intent.putExtra("sound", sound);
         intent.putExtra("vibration", vibration);
         intent.putExtra("name", name);
         intent.putExtra("problem_type", problem_type);
+
+        intent.setAction("alarm");
+
         PendingIntent pendingIntent =
                 PendingIntent.getBroadcast(
                         context,
@@ -60,8 +64,6 @@ public class AlarmController {
 
         Alarm alarm = new Alarm(id, d, h, m, s, sound, vibration, name, problem_type, favorite);
         saveAlarm(alarm);
-
-        Log.d("AlarmController", "setAlarm: " + id + "\n" + pref.getString("alarm_list", ""));
 
         return id;
     }
@@ -99,18 +101,27 @@ public class AlarmController {
         editor.putString("alarm_list", new_list);
         editor.apply();
 
-
         Intent intent = new Intent(context, AlarmReciver.class);
+        Alarm alarm = getAlarm(id);
+        intent.putExtra("alarm", id);
+        intent.putExtra("h", alarm.h);
+        intent.putExtra("m", alarm.m);
+        intent.putExtra("sound", alarm.sound);
+        intent.putExtra("vibration", alarm.vibration);
+        intent.putExtra("name", alarm.name);
+        intent.putExtra("problem_type", alarm.problem_type);
+
+        intent.setAction("alarm");
+
         PendingIntent pendingIntent = // 등록했을 때의 인텐트랑 같아야 삭제됨
                 PendingIntent.getBroadcast(
                         context,
                         id,
                         intent,
-                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                        PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
-        pendingIntent.cancel();
         return true;
     }
 
@@ -175,9 +186,7 @@ class Alarm {
         this.h = Integer.parseInt(tt[1]);
         this.m = Integer.parseInt(tt[2]);
         this.s = Integer.parseInt(tt[3]);
-        Log.d("debug", t[2]);
         String[] ttt = t[2].split("\\|");
-        Log.d("debug", ttt[0] + " " + ttt[1] + " " + ttt[2] + " " + ttt[3] + " " + ttt[4]);
         this.name = ttt[0];
         this.sound = Integer.parseInt(ttt[1]) == 1;
         this.vibration = Integer.parseInt(ttt[2]) == 1;

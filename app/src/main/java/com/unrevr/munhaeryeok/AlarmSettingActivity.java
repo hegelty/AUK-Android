@@ -2,6 +2,7 @@ package com.unrevr.munhaeryeok;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.skydoves.expandablelayout.ExpandableLayout;
 import com.unrevr.munhaeryeok.Alarm.AlarmController;
+import com.unrevr.munhaeryeok.alarm_list.AlarmListActivity;
 
 public class AlarmSettingActivity extends AppCompatActivity {
     int id;
@@ -155,6 +157,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
         ExpandableLayout soundExpandableLayout = findViewById(R.id.soundExpandableLayout);
         ExpandableLayout problemExpandableLayout = findViewById(R.id.problemExpandableLayout);
 
+        // 선택창 열고닫기
         dayExpandableLayout.setOnClickListener(v -> {
             if(dayExpandableLayout.isExpanded()) {
                 CheckBox[] dayCheckBox = new CheckBox[7];
@@ -191,8 +194,6 @@ public class AlarmSettingActivity extends AppCompatActivity {
             }
             else {
                 dayExpandableLayout.toggleLayout();
-                TextView dayTextView = dayExpandableLayout.parentLayout.findViewById(R.id.daySetTextView);
-                dayTextView.setText("");
             }
         });
 
@@ -222,8 +223,6 @@ public class AlarmSettingActivity extends AppCompatActivity {
             }
             else {
                 soundExpandableLayout.toggleLayout();
-                TextView soundTextView = soundExpandableLayout.parentLayout.findViewById(R.id.soundSetTextView);
-                soundTextView.setText("");
             }
         });
 
@@ -252,10 +251,27 @@ public class AlarmSettingActivity extends AppCompatActivity {
             }
             else {
                 problemExpandableLayout.toggleLayout();
-                TextView problemTextView = problemExpandableLayout.parentLayout.findViewById(R.id.problemSetTextView);
-                problemTextView.setText("");
             }
         });
+
+        // 체크박스
+        CheckBox[] checkBoxes = new CheckBox[11];
+        checkBoxes[1] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxMonday));
+        checkBoxes[2] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxTuesday));
+        checkBoxes[3] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxWednesday));
+        checkBoxes[4] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxThursday));
+        checkBoxes[5] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxFriday));
+        checkBoxes[6] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSaturday));
+        checkBoxes[0] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSunday));
+        checkBoxes[7] = soundExpandableLayout.secondLayout.findViewById(R.id.soundCheckBox);
+        checkBoxes[8] = soundExpandableLayout.secondLayout.findViewById(R.id.vibrationCheckBox);
+        checkBoxes[9] = problemExpandableLayout.secondLayout.findViewById(R.id.mcCheckBox);
+        checkBoxes[10] = problemExpandableLayout.secondLayout.findViewById(R.id.sfCheckBox);
+        for(CheckBox c: checkBoxes) {
+            c.setOnClickListener(v -> {
+                updateSelects();
+            });
+        }
     }
 
     int createID() {
@@ -331,7 +347,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
 
                 SharedPreferences.Editor editor = pref.edit();
 
-                String original = pref.getString("alarms_list", "");
+                String original = pref.getString("alarms_list", "").trim();
                 String[] list = original.split("\n");
                 String new_list = "";
                 for(String s : list) {
@@ -363,7 +379,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
     }
 
     AlarmData getAlarmData(int id) {
-        String original = pref.getString("alarms_list", "");
+        String original = pref.getString("alarms_list", "").trim();
         String[] list = original.split("\n");
         for(String s : list) {
             if(Integer.parseInt(s.split("\\|")[0]) == id) {
@@ -423,5 +439,91 @@ public class AlarmSettingActivity extends AppCompatActivity {
 
         CheckBox favoriteCheckBox = findViewById(R.id.favoriteCheckBox);
         favoriteCheckBox.setChecked(alarmData.favorite);
+
+        updateSelects();
     }
+
+    void updateSelects() {
+        // 요일
+        ExpandableLayout dayExpandableLayout = findViewById(R.id.dayExpandableLayout);
+
+        CheckBox[] dayCheckBox = new CheckBox[7];
+        dayCheckBox[1] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxMonday));
+        dayCheckBox[2] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxTuesday));
+        dayCheckBox[3] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxWednesday));
+        dayCheckBox[4] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxThursday));
+        dayCheckBox[5] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxFriday));
+        dayCheckBox[6] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSaturday));
+        dayCheckBox[0] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSunday));
+
+        String days = "";
+        String[] dayString = {"일", "월", "화", "수", "목", "금", "토"};
+        for(int i=0; i<7; i++) {
+            if(dayCheckBox[i].isChecked()) {
+                if(days!="") days += ", " + dayString[i];
+                else days = dayString[i];
+            }
+        }
+        if(dayCheckBox[1].isChecked()&&dayCheckBox[2].isChecked()&&dayCheckBox[3].isChecked()&&dayCheckBox[4].isChecked()&&dayCheckBox[5].isChecked()&&!dayCheckBox[6].isChecked()&&!dayCheckBox[0].isChecked()) {
+            days = "주중";
+        }
+        else if(dayCheckBox[0].isChecked()&&dayCheckBox[6].isChecked()&&dayCheckBox[1].isChecked()&&dayCheckBox[2].isChecked()&&dayCheckBox[3].isChecked()&&dayCheckBox[4].isChecked()&&dayCheckBox[5].isChecked()) {
+            days = "매일";
+        }
+
+        TextView dayTextView = dayExpandableLayout.parentLayout.findViewById(R.id.daySetTextView);
+        dayTextView.setText(days);
+
+        // 소리, 진동
+        ExpandableLayout soundExpandableLayout = findViewById(R.id.soundExpandableLayout);
+
+        CheckBox soundCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.soundCheckBox);
+        CheckBox vibrationCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.vibrationCheckBox);
+        TextView soundTextView = soundExpandableLayout.parentLayout.findViewById(R.id.soundSetTextView);
+
+        if(soundCheckBox.isChecked()) {
+            if(vibrationCheckBox.isChecked()) {
+                soundTextView.setText("소리 + 진동");
+            }
+            else {
+                soundTextView.setText("소리");
+            }
+        }
+        else {
+            if(vibrationCheckBox.isChecked()) {
+                soundTextView.setText("진동");
+            }
+            else {
+                soundTextView.setText("무음");
+            }
+        }
+
+        // 문제
+        ExpandableLayout problemExpandableLayout = findViewById(R.id.problemExpandableLayout);
+
+        CheckBox mcCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.mcCheckBox);
+        CheckBox sfCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.sfCheckBox);
+        TextView problemTextView = problemExpandableLayout.parentLayout.findViewById(R.id.problemSetTextView);
+
+        if (mcCheckBox.isChecked()) {
+            if (sfCheckBox.isChecked()) {
+                problemTextView.setText("객관식 + 주관식");
+            } else {
+                problemTextView.setText("객관식");
+            }
+        } else {
+            if (sfCheckBox.isChecked()) {
+                problemTextView.setText("주관식");
+            } else {
+                problemTextView.setText("");
+            }
+        }
+    }
+
+//    @Override
+//    public void onDestroy() {
+//        super.onDestroy();
+//        Intent intent = new Intent(this, AlarmListActivity.class);
+//        startActivity(intent);
+//    }
 }
