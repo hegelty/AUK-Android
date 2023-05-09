@@ -343,7 +343,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
     boolean deleteAlarm(int id) {
 //        try {
             if(id!=0) {
-                AlarmData alarmData = new AlarmData(id, 0, 0, new int[7], false, false, "", 0, false);
+                AlarmData alarmData = getAlarmData(id);
 
                 SharedPreferences.Editor editor = pref.edit();
 
@@ -351,7 +351,10 @@ public class AlarmSettingActivity extends AppCompatActivity {
                 String[] list = original.split("\n");
                 String new_list = "";
                 for(String s : list) {
-                    if(Integer.parseInt(s.split("\\|")[0]) == id) continue;
+                    if(Integer.parseInt(s.split("\\|")[0]) == id) {
+                        Log.d("deleteAlarm", "delete " + s);
+                        continue;
+                    }
                     new_list += s + "\n";
                 }
                 editor.putString("alarms_list", new_list);
@@ -360,6 +363,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
                 AlarmController alarmController = new AlarmController(getApplicationContext());
                 for(int i=0;i<7;i++) {
                     if(alarmData.alarm_ids[i]!=0) {
+                        Log.d("deleteAlarm", "delete(setting) " + alarmData.alarm_ids[i]);
                         alarmController.deleteAlarm(alarmData.alarm_ids[i]);
                     }
                 }

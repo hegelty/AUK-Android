@@ -5,7 +5,10 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.SoundPool;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -17,21 +20,40 @@ public class AlarmMCActivity extends AppCompatActivity {
     boolean sound, vibration;
     Problem problem;
     int cnt;
+    boolean solved;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.alarm_mc_layout);
         Intent intent = getIntent();
+        solved = false;
 
         id = intent.getIntExtra("id", 0);
         h = intent.getIntExtra("h", 0);
         m = intent.getIntExtra("m", 0);
         sound = intent.getBooleanExtra("sound", false);
         vibration = intent.getBooleanExtra("vibration", false);
-        problem = new Problem(Problem.MC);
+
+        int problem_id = intent.getIntExtra("problem_id", 0);
+        if(problem_id!=0) problem = new Problem(Problem.MC, problem_id);
+        else problem = new Problem(Problem.MC);
 
         cnt = 0;
+
+        // vibrate until destroyed
+        if (vibration) {
+            Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+            long[] pattern = {0, 1000, 1000};
+            vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0));
+        }
+
+        // play alarm sound until destroyed
+        if (sound) {
+            SoundPool soundPool = new SoundPool.Builder().build();
+            int soundId = soundPool.load(this, R.raw.alarm_sound, 1);
+            soundPool.play(soundId, 1f, 1f, 0, -1, 1f);
+        }
 
         initLayout();
     }
@@ -71,6 +93,7 @@ public class AlarmMCActivity extends AppCompatActivity {
         }
 
         questionTextView.setText(problem.question);
+
         for (int i = 0; i < 4; i++) {
             answerTextView[i].setText(problem.mcAnswers[i]);
             int I = i;
@@ -116,10 +139,54 @@ public class AlarmMCActivity extends AppCompatActivity {
     }
 
     void addWrongProblem(Problem problem) {
-
+        solved = true;
     }
 
     void addCorrectProblem(Problem problem) {
+        solved = true;
+    }
 
+    // 강제로 끌때 동작
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(!solved) {
+            Intent intent = new Intent(this, AlarmMCActivity.class);
+            intent.putExtra("id", id);
+            intent.putExtra("h", h);
+            intent.putExtra("m", m);
+            intent.putExtra("sound", sound);
+            intent.putExtra("vibration", vibration);
+            intent.putExtra("problem_id", problem.id);
+            startActivity(intent);
+
+            solved = true;
+
+            // finish this activity
+            finish();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(!solved) {
+            Intent intent = new Intent(this, AlarmMCActivity.class);
+            intent.putExtra("id", id);
+            intent.putExtra("h", h);
+            intent.putExtra("m", m);
+            intent.putExtra("sound", sound);
+            intent.putExtra("vibration", vibration);
+            intent.putExtra("problem_id", problem.id);
+            startActivity(intent);
+
+            // finish this activity
+            finish();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        // do nothing
     }
 }

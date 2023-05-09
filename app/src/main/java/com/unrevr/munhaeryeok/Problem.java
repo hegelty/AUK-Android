@@ -5,6 +5,7 @@ import java.io.InputStream;
 public class Problem {
     public String question;
     int problemType;
+    public int id;
     public String[] mcAnswers;
     public int mcCorrectAnswer;
     public String sfAnswer;
@@ -16,6 +17,14 @@ public class Problem {
 
     public Problem(int type) {
         problemType = type;
+        id = 0;
+        if(type == 1) getMCProblem();
+        else if(type == 2) getSFProblem();
+    }
+
+    public Problem(int type, int id) {
+        problemType = type;
+        this.id = id;
         if(type == 1) getMCProblem();
         else if(type == 2) getSFProblem();
     }
@@ -28,7 +37,8 @@ public class Problem {
             String str = new String(buffer);
             is.close();
             String[] problems = str.split(";");
-            String[] problem = problems[(int)(Math.random()*problems.length)].trim().split("\\|");
+            if(id==0) id = (int)(Math.random()*problems.length);
+            String[] problem = problems[id].trim().split("\\|");
             question = problem[0];
             mcAnswers = new String[4];
             for(int i=0;i<4;i++) mcAnswers[i] = problem[i+1];
@@ -48,7 +58,8 @@ public class Problem {
             String str = new String(buffer);
             is.close();
             String[] problems = str.split(";");
-            String[] problem = problems[(int)(Math.random()*problems.length)].trim().split("//|");
+            if(id==0) id = (int)(Math.random()*problems.length);
+            String[] problem = problems[id].trim().split("\\|");
             question = problem[0];
             sfAnswer = problem[1];
             hint = problem[2];

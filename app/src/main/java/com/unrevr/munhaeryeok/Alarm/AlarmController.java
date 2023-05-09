@@ -24,20 +24,22 @@ public class AlarmController {
 
     public int setAlarm(int d, int h, int m, int s, int id, boolean sound, boolean vibration, String name, int problem_type, boolean favorite) {
         // id = 0 이면 새로운 알람 생성
-        Intent intent = new Intent(context, AlarmReciver.class);
-
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.DAY_OF_WEEK, d);
         calendar.set(Calendar.HOUR_OF_DAY, h);
         calendar.set(Calendar.MINUTE, m);
         calendar.set(Calendar.SECOND, s);
 
-        if(id==0) id = createID();
+        if(id==0) {
+            id = createID();
+            if(calendar.compareTo(Calendar.getInstance()) < 0) calendar.add(Calendar.DATE, 7);
+        }
         else { // 알람 재설정
             calendar.add(Calendar.DATE, 7);
             deleteAlarm(id);
         }
 
+        Intent intent = new Intent(context, AlarmReciver.class);
         intent.putExtra("alarm", id);
         intent.putExtra("h", h);
         intent.putExtra("m", m);
@@ -45,8 +47,6 @@ public class AlarmController {
         intent.putExtra("vibration", vibration);
         intent.putExtra("name", name);
         intent.putExtra("problem_type", problem_type);
-
-        intent.setAction("alarm");
 
         PendingIntent pendingIntent =
                 PendingIntent.getBroadcast(
@@ -78,20 +78,24 @@ public class AlarmController {
         SharedPreferences.Editor editor = pref.edit();
         editor.putInt("last_id", id + 1);
         editor.apply();
-        return id;
+        return id + 1;
     }
 
     void saveAlarm(Alarm alarm) {
         SharedPreferences.Editor editor = pref.edit();
-        String original = pref.getString("alarm_list", "");
-        editor.putString("alarm_list", original + alarm.toString() + "\n");
+        String original = pref.getString("alarm_list", "").trim();
+        editor.putString("alarm_list", original + "\n" + alarm.toString());
         editor.apply();
     }
 
     public boolean deleteAlarm(int id) {
+        Log.d("deleteAlarm", "deleteAlarm: " + id);
         SharedPreferences.Editor editor = pref.edit();
+        
+        Alarm alarm = getAlarm(id); // 이게 앞에 있어야 pref에서 지워도 문제 없음
 
-        String original = pref.getString("alarm_list", "");
+        String original = pref.getString("alarm_list", "").trim();
+        Log.d("deleteAlarm", "deleteAlarm Original: " + original);
         String[] list = original.split("\n");
         String new_list = "";
         for(String s : list) {
@@ -102,7 +106,6 @@ public class AlarmController {
         editor.apply();
 
         Intent intent = new Intent(context, AlarmReciver.class);
-        Alarm alarm = getAlarm(id);
         intent.putExtra("alarm", id);
         intent.putExtra("h", alarm.h);
         intent.putExtra("m", alarm.m);
@@ -110,8 +113,6 @@ public class AlarmController {
         intent.putExtra("vibration", alarm.vibration);
         intent.putExtra("name", alarm.name);
         intent.putExtra("problem_type", alarm.problem_type);
-
-        intent.setAction("alarm");
 
         PendingIntent pendingIntent = // 등록했을 때의 인텐트랑 같아야 삭제됨
                 PendingIntent.getBroadcast(
@@ -126,9 +127,11 @@ public class AlarmController {
     }
 
     public Alarm getAlarm(int id) {
-        String original = pref.getString("alarm_list", "");
+        String original = pref.getString("alarm_list", "").trim();
+        Log.d("getAlarm", "getAlarm: " + original);
         String[] list = original.split("\n");
         for(String s : list) {
+            s= s.trim();
             String[] time = s.split("-");
             if(Integer.parseInt(time[0]) == id) {
                 return new Alarm(s);

@@ -23,6 +23,8 @@
         <activity
             android:name=".Alarm.AlarmMCActivity"
             android:exported="false" />
+        <activity android:name=".Alarm.AlarmSFActivity"
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

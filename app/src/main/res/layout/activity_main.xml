@@ -15,11 +15,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" >
 
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:text="AUK" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:text="alpha build 2305090" />
+
         <Button
             android:id="@+id/listButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="LIST" />
+            android:text="알람 목록" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
