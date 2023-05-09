@@ -23,6 +23,7 @@ public class AlarmMCActivity extends AppCompatActivity {
     int cnt;
     boolean solved;
 
+    Vibrator vibrator;
     SoundPool soundPool;
     int soundID;
 
@@ -48,7 +49,7 @@ public class AlarmMCActivity extends AppCompatActivity {
         // vibrate until destroyed
         if (vibration) {
             Log.d("vibration", "vibration");
-            Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+            vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
             long[] pattern = {0, 1000, 500};
             vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0));
         }
@@ -147,11 +148,13 @@ public class AlarmMCActivity extends AppCompatActivity {
     void addWrongProblem(Problem problem) {
         solved = true;
         soundPool.stop(soundID);
+        vibrator.cancel();
     }
 
     void addCorrectProblem(Problem problem) {
         solved = true;
         soundPool.stop(soundID);
+        vibrator.cancel();
     }
 
     // 강제로 끌때 동작
@@ -159,6 +162,7 @@ public class AlarmMCActivity extends AppCompatActivity {
     public void onPause() {
         super.onPause();
         soundPool.stop(soundID);
+        vibrator.cancel();
         if(!solved) {
             Intent intent = new Intent(this, AlarmMCActivity.class);
             intent.putExtra("id", id);
@@ -181,6 +185,7 @@ public class AlarmMCActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         soundPool.stop(soundID);
+        vibrator.cancel();
         if(!solved) {
             Intent intent = new Intent(this, AlarmMCActivity.class);
             intent.putExtra("id", id);

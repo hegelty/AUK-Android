@@ -7,11 +7,11 @@ android {
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.unrevr.munhaeryeok"
+        applicationId "com.unrevr.auk"
         minSdk 28
         targetSdk 33
         versionCode 1
-        versionName "1.0"
+        versionName "alpha build 2305091"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
