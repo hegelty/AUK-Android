@@ -5,6 +5,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.AudioAttributes;
 import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.VibrationEffect;
@@ -57,7 +58,7 @@ public class AlarmMCActivity extends AppCompatActivity {
         // play alarm sound until destroyed
         if (sound) {
             Log.d("sound", "sound");
-            soundPool = new SoundPool.Builder().build();
+            soundPool = new SoundPool.Builder().setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build()).build();
             soundID = soundPool.load(getApplicationContext(), R.raw.alarm_sound, 1);
             soundPool.setOnLoadCompleteListener((soundPool1, i, i1) -> soundPool1.play(soundID, 3f, 3f, 0, -1, 1f));
         }
@@ -147,22 +148,22 @@ public class AlarmMCActivity extends AppCompatActivity {
 
     void addWrongProblem(Problem problem) {
         solved = true;
-        soundPool.stop(soundID);
-        vibrator.cancel();
+        if(sound) soundPool.stop(soundID);
+        if(vibration) vibrator.cancel();
     }
 
     void addCorrectProblem(Problem problem) {
         solved = true;
-        soundPool.stop(soundID);
-        vibrator.cancel();
+        if(sound) soundPool.stop(soundID);
+        if(vibration) vibrator.cancel();
     }
 
     // 강제로 끌때 동작
     @Override
     public void onPause() {
         super.onPause();
-        soundPool.stop(soundID);
-        vibrator.cancel();
+        if(sound) soundPool.stop(soundID);
+        if(vibration) vibrator.cancel();
         if(!solved) {
             Intent intent = new Intent(this, AlarmMCActivity.class);
             intent.putExtra("id", id);
@@ -184,8 +185,8 @@ public class AlarmMCActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        soundPool.stop(soundID);
-        vibrator.cancel();
+        if(sound) soundPool.stop(soundID);
+        if(vibration) vibrator.cancel();
         if(!solved) {
             Intent intent = new Intent(this, AlarmMCActivity.class);
             intent.putExtra("id", id);
