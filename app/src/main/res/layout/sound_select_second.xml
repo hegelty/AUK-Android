@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:button="@null"
-            android:drawableRight="?android:attr/listChoiceIndicatorMultiple"
+            android:drawableEnd="?android:attr/listChoiceIndicatorMultiple"
             android:text="소리"
             android:textColor="#FFFFFF"/>
 
@@ -29,7 +29,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:button="@null"
-            android:drawableRight="?android:attr/listChoiceIndicatorMultiple"
+            android:drawableEnd="?android:attr/listChoiceIndicatorMultiple"
             android:text="진동"
             android:textColor="#FFFFFF" />
     </LinearLayout>

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">AUK: 문해력 알람</string>
+    <string name="app_version">alpha build 2305091</string>
 </resources>

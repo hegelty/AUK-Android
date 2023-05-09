@@ -29,14 +29,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAlignment="center"
-            android:textSize="20sp"
-            android:text="alpha build 2305090" />
+            android:textSize="14sp"
+            android:text="@string/app_version" />
+
+        <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="14sp"
+        android:text="Copyrightⓒ2023 UNREVR All rights reserved." />
 
         <Button
             android:id="@+id/listButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="알람 목록" />
+
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -109,7 +109,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
             if (setAlarm()) {
                 finish();
             }
-            new AlertDialog.Builder(this)
+            else new AlertDialog.Builder(this)
                     .setTitle("오류")
                     .setMessage("알람 설정에 실패하였습니다.")
                     .setPositiveButton("확인", (dialog, which) -> {
@@ -283,7 +283,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
     }
 
     boolean setAlarm() {
-//        try {
+        try {
             if(id==0) id = createID();
             else deleteAlarm(id);
 
@@ -327,21 +327,22 @@ public class AlarmSettingActivity extends AppCompatActivity {
             for(int i = 0; i < 7; i++) {
                 if(dayCheckBox[i].isChecked()) {
                     int id = alarmController.setAlarm(i+1, h, m, 0, 0,
-                            soundCheckBox.isActivated(), vibrationCheckBox.isActivated(), name, problem_type, favorite);
+                            soundCheckBox.isChecked(), vibrationCheckBox.isChecked(), name, problem_type, favorite);
                     days[i] = id;
                 }
             }
 
-            AlarmData alarmData = new AlarmData(id, h, m, days, soundCheckBox.isActivated(), vibrationCheckBox.isActivated(), name, problem_type, favorite);
+            AlarmData alarmData = new AlarmData(id, h, m, days, soundCheckBox.isChecked(), vibrationCheckBox.isChecked(), name, problem_type, favorite);
             saveAlarm(alarmData);
-//        } catch (Exception e) {
-//            return false;
-//        }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
         return true;
     }
 
     boolean deleteAlarm(int id) {
-//        try {
+        try {
             if(id!=0) {
                 AlarmData alarmData = getAlarmData(id);
 
@@ -368,10 +369,10 @@ public class AlarmSettingActivity extends AppCompatActivity {
                     }
                 }
             }
-//        } catch (Exception e) {
-//            Log.e("deleteAlarm", e.toString());
-//            return false;
-//        }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
         return true;
     }
 

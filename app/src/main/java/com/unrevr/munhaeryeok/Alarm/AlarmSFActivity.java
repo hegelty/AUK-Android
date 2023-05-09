@@ -7,6 +7,7 @@ import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -25,6 +26,8 @@ public class AlarmSFActivity extends AppCompatActivity {
     Problem problem;
     int cnt;
     boolean solved;
+    SoundPool soundPool;
+    int soundID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,16 +50,18 @@ public class AlarmSFActivity extends AppCompatActivity {
 
         // vibrate until destroyed
         if (vibration) {
+            Log.d("vibration", "vibration");
             Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-            long[] pattern = {0, 1000, 1000};
+            long[] pattern = {0, 1000, 500};
             vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0));
         }
 
         // play alarm sound until destroyed
         if (sound) {
-            SoundPool soundPool = new SoundPool.Builder().build();
-            int soundId = soundPool.load(this, R.raw.alarm_sound, 1);
-            soundPool.play(soundId, 1f, 1f, 0, -1, 1f);
+            Log.d("sound", "sound");
+            soundPool = new SoundPool.Builder().build();
+            soundID = soundPool.load(getApplicationContext(), R.raw.alarm_sound, 1);
+            soundPool.setOnLoadCompleteListener((soundPool1, i, i1) -> soundPool1.play(soundID, 1f, 1f, 0, -1, 1f));
         }
 
         initLayout();
@@ -137,16 +142,19 @@ public class AlarmSFActivity extends AppCompatActivity {
 
     void addWrongProblem(Problem problem) {
         solved = true;
+        soundPool.stop(soundID);
     }
 
     void addCorrectProblem(Problem problem) {
         solved = true;
+        soundPool.stop(soundID);
     }
 
     // 강제로 끌때 동작
     @Override
     public void onPause() {
         super.onPause();
+        soundPool.stop(soundID);
         if(!solved) {
             Intent intent = new Intent(this, AlarmMCActivity.class);
             intent.putExtra("id", id);
@@ -165,6 +173,7 @@ public class AlarmSFActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        soundPool.stop(soundID);
         if(!solved) {
             Intent intent = new Intent(this, AlarmMCActivity.class);
             intent.putExtra("id", id);
