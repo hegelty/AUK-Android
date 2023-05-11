@@ -84,7 +84,8 @@ public class AlarmController {
     void saveAlarm(Alarm alarm) {
         SharedPreferences.Editor editor = pref.edit();
         String original = pref.getString("alarm_list", "").trim();
-        editor.putString("alarm_list", original + "\n" + alarm.toString());
+        Log.d("saveAlarm", "saveAlarm Original: " + original + alarm.toString() + ";");
+        editor.putString("alarm_list", original + alarm.toString() + ";");
         editor.apply();
     }
 
@@ -96,11 +97,11 @@ public class AlarmController {
 
         String original = pref.getString("alarm_list", "").trim();
         Log.d("deleteAlarm", "deleteAlarm Original: " + original);
-        String[] list = original.split("\n");
+        String[] list = original.split(";");
         String new_list = "";
         for(String s : list) {
             if(Integer.parseInt(s.split("-")[0]) == id) continue;
-            new_list += s + "\n";
+            new_list += s + ";";
         }
         editor.putString("alarm_list", new_list);
         editor.apply();
@@ -129,7 +130,7 @@ public class AlarmController {
     public Alarm getAlarm(int id) {
         String original = pref.getString("alarm_list", "").trim();
         Log.d("getAlarm", "getAlarm: " + original);
-        String[] list = original.split("\n");
+        String[] list = original.split(";");
         for(String s : list) {
             s= s.trim();
             String[] time = s.split("-");

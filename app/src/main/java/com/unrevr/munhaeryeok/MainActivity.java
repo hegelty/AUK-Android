@@ -22,8 +22,13 @@ public class MainActivity extends AppCompatActivity {
         checkFirstRun();
         getOverlayPermission();
 
-        findViewById(R.id.listButton).setOnClickListener(v -> {
+        findViewById(R.id.upcommingAlarm).setOnClickListener(v -> {
             Intent intent = new Intent(getApplicationContext(), AlarmListActivity.class);
+            startActivity(intent);
+        });
+
+        findViewById(R.id.settingButton).setOnClickListener(v -> {
+            Intent intent = new Intent(getApplicationContext(), SettingActivity.class);
             startActivity(intent);
         });
     }

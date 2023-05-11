@@ -42,7 +42,7 @@ public class AlarmListActivity extends AppCompatActivity {
         String original = pref.getString("alarms_list", "").trim();
         ArrayList<AlarmData> alarmDataList = new ArrayList<>();
         if(original != "") {
-            String[] list = original.split("\n");
+            String[] list = original.split(";");
             for (String s : list) {
                 alarmDataList.add(new AlarmData(s));
             }

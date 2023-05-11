@@ -31,6 +31,9 @@ public class AlarmMCActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setShowWhenLocked(true);
+        setTurnScreenOn(true);
+
         setContentView(R.layout.alarm_mc_layout);
         Intent intent = getIntent();
         solved = false;
@@ -161,9 +164,9 @@ public class AlarmMCActivity extends AppCompatActivity {
     // 강제로 끌때 동작
     @Override
     public void onPause() {
-        super.onPause();
         if(sound) soundPool.stop(soundID);
         if(vibration) vibrator.cancel();
+        super.onPause();
         if(!solved) {
             Intent intent = new Intent(this, AlarmMCActivity.class);
             intent.putExtra("id", id);
@@ -179,12 +182,10 @@ public class AlarmMCActivity extends AppCompatActivity {
             // finish this activity
             finish();
         }
-
     }
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         if(sound) soundPool.stop(soundID);
         if(vibration) vibrator.cancel();
         if(!solved) {
@@ -196,10 +197,9 @@ public class AlarmMCActivity extends AppCompatActivity {
             intent.putExtra("vibration", vibration);
             intent.putExtra("problem_id", problem.id);
             startActivity(intent);
-
-            // finish this activity
-            finish();
         }
+
+        super.onDestroy();
     }
 
     @Override

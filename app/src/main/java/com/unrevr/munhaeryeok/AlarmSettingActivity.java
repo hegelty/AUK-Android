@@ -349,14 +349,14 @@ public class AlarmSettingActivity extends AppCompatActivity {
                 SharedPreferences.Editor editor = pref.edit();
 
                 String original = pref.getString("alarms_list", "").trim();
-                String[] list = original.split("\n");
+                String[] list = original.split(";");
                 String new_list = "";
                 for(String s : list) {
                     if(Integer.parseInt(s.split("\\|")[0]) == id) {
                         Log.d("deleteAlarm", "delete " + s);
                         continue;
                     }
-                    new_list += s + "\n";
+                    new_list += s + ";";
                 }
                 editor.putString("alarms_list", new_list);
                 editor.apply();
@@ -379,13 +379,14 @@ public class AlarmSettingActivity extends AppCompatActivity {
     void saveAlarm(AlarmData alarmData) {
         SharedPreferences.Editor editor = pref.edit();
         String original = pref.getString("alarms_list", "").trim();
-        editor.putString("alarms_list", original + "\n" + alarmData.toString());
+        Log.d("saveAlarm", "data: " + alarmData.toString());
+        editor.putString("alarms_list", original + alarmData.toString() + ";");
         editor.apply();
     }
 
     AlarmData getAlarmData(int id) {
         String original = pref.getString("alarms_list", "").trim();
-        String[] list = original.split("\n");
+        String[] list = original.split(";");
         for(String s : list) {
             if(Integer.parseInt(s.split("\\|")[0]) == id) {
                 return new AlarmData(s);

@@ -11,6 +11,7 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -34,6 +35,9 @@ public class AlarmSFActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setShowWhenLocked(true);
+        setTurnScreenOn(true);
+
         setContentView(R.layout.alarm_sf_layout);
         Intent intent = getIntent();
         solved = false;
