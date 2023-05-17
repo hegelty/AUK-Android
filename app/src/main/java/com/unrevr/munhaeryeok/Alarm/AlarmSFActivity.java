@@ -1,5 +1,6 @@
 package com.unrevr.munhaeryeok.Alarm;
 
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -22,6 +23,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.unrevr.munhaeryeok.Problem;
 import com.unrevr.munhaeryeok.R;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class AlarmSFActivity extends AppCompatActivity {
     int id, h, m;
     boolean sound, vibration;
@@ -35,11 +38,14 @@ public class AlarmSFActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setShowWhenLocked(true);
-        setTurnScreenOn(true);
 
         setContentView(R.layout.alarm_sf_layout);
         Intent intent = getIntent();
+
+        setTurnScreenOn(true);
+        setShowWhenLocked(true);
+        this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         solved = false;
 
         id = intent.getIntExtra("id", 0);
@@ -64,9 +70,9 @@ public class AlarmSFActivity extends AppCompatActivity {
 
         // play alarm sound until destroyed
         if (sound) {
-            Log.d("sound", "sound");
             soundPool = new SoundPool.Builder().setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build()).build();
             soundID = soundPool.load(getApplicationContext(), R.raw.alarm_sound, 1);
+            Log.d("sound", soundID + "");
             soundPool.setOnLoadCompleteListener((soundPool1, i, i1) -> soundPool1.play(soundID, 1f, 1f, 0, -1, 1f));
         }
 

@@ -11,11 +11,14 @@ import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
 import com.unrevr.munhaeryeok.Problem;
 import com.unrevr.munhaeryeok.R;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AlarmMCActivity extends AppCompatActivity {
     int id, h, m;
@@ -31,11 +34,14 @@ public class AlarmMCActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setShowWhenLocked(true);
-        setTurnScreenOn(true);
 
         setContentView(R.layout.alarm_mc_layout);
         Intent intent = getIntent();
+
+        setTurnScreenOn(true);
+        setShowWhenLocked(true);
+        this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         solved = false;
 
         id = intent.getIntExtra("id", 0);
@@ -60,10 +66,11 @@ public class AlarmMCActivity extends AppCompatActivity {
 
         // play alarm sound until destroyed
         if (sound) {
-            Log.d("sound", "sound");
+            Boolean sound = false;
             soundPool = new SoundPool.Builder().setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build()).build();
             soundID = soundPool.load(getApplicationContext(), R.raw.alarm_sound, 1);
-            soundPool.setOnLoadCompleteListener((soundPool1, i, i1) -> soundPool1.play(soundID, 3f, 3f, 0, -1, 1f));
+            Log.d("sound", soundID + "");
+            soundPool.setOnLoadCompleteListener((soundPool1, i, i1) -> soundPool1.play(soundID, 1f, 1f, 0, -1, 1f));
         }
 
         initLayout();
