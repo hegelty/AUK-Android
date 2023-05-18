@@ -42,11 +42,9 @@ public class MainActivity extends AppCompatActivity {
             editor.putBoolean("isFirst", true);
             editor.apply();
 
-            SharedPreferences alarm_pref = getSharedPreferences("alarm", MODE_PRIVATE);
-            SharedPreferences.Editor alarm_editor = alarm_pref.edit();
-            alarm_editor.putInt("last_alarm_id", 0);
-            alarm_editor.putString("alarm_list", "");
-            alarm_editor.apply();
+            DataController dataCon = new DataController(getApplicationContext(), "alarm_data");
+            dataCon.putInt("last_alarm_id", 0);
+            dataCon.putString("alarm_list", "");
         }
     }
 

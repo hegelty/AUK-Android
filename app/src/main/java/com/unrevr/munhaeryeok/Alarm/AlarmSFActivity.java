@@ -22,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.unrevr.munhaeryeok.Problem;
 import com.unrevr.munhaeryeok.R;
+import com.unrevr.munhaeryeok.SoundController;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -69,13 +70,17 @@ public class AlarmSFActivity extends AppCompatActivity {
         }
 
         // play alarm sound until destroyed
-        if (sound) {
+        if (sound && !SoundController.playing) {
             soundPool = new SoundPool.Builder().setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build()).build();
             soundID = soundPool.load(getApplicationContext(), R.raw.alarm_sound, 1);
             Log.d("sound", soundID + "");
-            soundPool.setOnLoadCompleteListener((soundPool1, i, i1) -> soundPool1.play(soundID, 1f, 1f, 0, -1, 1f));
+            soundPool.setOnLoadCompleteListener((soundPool1, i, i1) -> {
+                soundPool1.play(soundID, 1f, 1f, 0, -1, 1f);
+                SoundController.playSound();
+                Log.d("sound", "play");
+                SoundController.playSound();
+            });
         }
-
         initLayout();
     }
 
@@ -154,21 +159,32 @@ public class AlarmSFActivity extends AppCompatActivity {
 
     void addWrongProblem(Problem problem) {
         solved = true;
-        if(sound) soundPool.stop(soundID);
+        stopSound();
         if(vibration) vibrator.cancel();
+        SoundController.stopSound();
     }
 
     void addCorrectProblem(Problem problem) {
         solved = true;
-        if(sound) soundPool.stop(soundID);
+        stopSound();
         if(vibration) vibrator.cancel();
+        SoundController.stopSound();
+    }
+
+    void stopSound() {
+        if(sound) try {
+            soundPool.stop(soundID);
+        } catch (Exception e) {
+        }
     }
 
     // 강제로 끌때 동작
     @Override
     public void onPause() {
-        super.onPause();
-        if(sound) soundPool.stop(soundID);
+        if(sound) try {
+            soundPool.stop(soundID);
+        } catch (Exception e) {
+        }
         if(vibration) vibrator.cancel();
         if(!solved) {
             Intent intent = new Intent(this, AlarmMCActivity.class);
@@ -183,12 +199,12 @@ public class AlarmSFActivity extends AppCompatActivity {
             // finish this activity
             finish();
         }
+        super.onPause();
     }
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
-        if(sound) soundPool.stop(soundID);
+        stopSound();
         if(vibration) vibrator.cancel();
         if(!solved) {
             Intent intent = new Intent(this, AlarmMCActivity.class);
@@ -203,6 +219,7 @@ public class AlarmSFActivity extends AppCompatActivity {
             // finish this activity
             finish();
         }
+        super.onDestroy();
     }
 
     @Override

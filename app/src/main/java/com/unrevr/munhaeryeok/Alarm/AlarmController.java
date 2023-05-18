@@ -7,19 +7,20 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.util.Log;
+
+import com.unrevr.munhaeryeok.DataController;
 
 import java.util.Calendar;
 
 
 public class AlarmController {
     private Context context;
-    SharedPreferences pref;
+    DataController dataCon;
 
     public AlarmController(Context context) {
         this.context = context;
-        this.pref  = context.getSharedPreferences("alarm", MODE_PRIVATE);
+        this.dataCon  = new DataController(context, "alarm");
     }
 
     public int setAlarm(int d, int h, int m, int s, int id, boolean sound, boolean vibration, String name, int problem_type, boolean favorite) {
@@ -74,37 +75,31 @@ public class AlarmController {
     }
 
     int createID() {
-        int id = pref.getInt("last_id", 0);
-        SharedPreferences.Editor editor = pref.edit();
-        editor.putInt("last_id", id + 1);
-        editor.apply();
+        int id = dataCon.getInt("last_id", 0);
+        dataCon.putInt("last_id", id + 1);
         return id + 1;
     }
 
     void saveAlarm(Alarm alarm) {
-        SharedPreferences.Editor editor = pref.edit();
-        String original = pref.getString("alarm_list", "").trim();
-        Log.d("saveAlarm", "saveAlarm Original: " + original + alarm.toString() + ";");
-        editor.putString("alarm_list", original + alarm.toString() + ";");
-        editor.apply();
+        String original = dataCon.getString("alarm_list", "").trim();
+        Log.d("saveAlarm", "saveAlarm Original: " + original + alarm.toString() + "=");
+        dataCon.putString("alarm_list", original + alarm.toString() + "=");
     }
 
     public boolean deleteAlarm(int id) {
         Log.d("deleteAlarm", "deleteAlarm: " + id);
-        SharedPreferences.Editor editor = pref.edit();
         
-        Alarm alarm = getAlarm(id); // 이게 앞에 있어야 pref에서 지워도 문제 없음
+        Alarm alarm = getAlarm(id); // 이게 앞에 있어야 dataCon에서 지워도 문제 없음
 
-        String original = pref.getString("alarm_list", "").trim();
+        String original = dataCon.getString("alarm_list", "").trim();
         Log.d("deleteAlarm", "deleteAlarm Original: " + original);
-        String[] list = original.split(";");
+        String[] list = original.split("=");
         String new_list = "";
         for(String s : list) {
             if(Integer.parseInt(s.split("-")[0]) == id) continue;
-            new_list += s + ";";
+            new_list += s + "=";
         }
-        editor.putString("alarm_list", new_list);
-        editor.apply();
+        dataCon.putString("alarm_list", new_list);
 
         Intent intent = new Intent(context, AlarmReciver.class);
         intent.putExtra("alarm", id);
@@ -128,9 +123,9 @@ public class AlarmController {
     }
 
     public Alarm getAlarm(int id) {
-        String original = pref.getString("alarm_list", "").trim();
+        String original = dataCon.getString("alarm_list", "").trim();
         Log.d("getAlarm", "getAlarm: " + original);
-        String[] list = original.split(";");
+        String[] list = original.split("=");
         for(String s : list) {
             s= s.trim();
             String[] time = s.split("-");

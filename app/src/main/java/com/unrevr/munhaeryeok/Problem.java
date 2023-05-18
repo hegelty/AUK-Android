@@ -1,5 +1,7 @@
 package com.unrevr.munhaeryeok;
 
+import android.util.Log;
+
 import java.io.InputStream;
 
 public class Problem {
@@ -38,6 +40,7 @@ public class Problem {
             is.close();
             String[] problems = str.split(";");
             if(id==0) id = (int)(Math.random()*problems.length);
+            Log.d("id", id+"");
             String[] problem = problems[id].trim().split("\\|");
             question = problem[0];
             mcAnswers = new String[4];

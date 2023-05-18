@@ -3,6 +3,8 @@ package com.unrevr.munhaeryeok.Alarm;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import android.app.KeyguardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.media.AudioAttributes;
@@ -17,8 +19,7 @@ import android.widget.TextView;
 
 import com.unrevr.munhaeryeok.Problem;
 import com.unrevr.munhaeryeok.R;
-
-import java.util.concurrent.atomic.AtomicBoolean;
+import com.unrevr.munhaeryeok.SoundController;
 
 public class AlarmMCActivity extends AppCompatActivity {
     int id, h, m;
@@ -38,9 +39,13 @@ public class AlarmMCActivity extends AppCompatActivity {
         setContentView(R.layout.alarm_mc_layout);
         Intent intent = getIntent();
 
+        Log.d("AlarmMCActivity", "onCreate");
+
         setTurnScreenOn(true);
         setShowWhenLocked(true);
         this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+        keyguardManager.requestDismissKeyguard(this, null);
 
         solved = false;
 
@@ -65,13 +70,18 @@ public class AlarmMCActivity extends AppCompatActivity {
         }
 
         // play alarm sound until destroyed
-        if (sound) {
-            Boolean sound = false;
+        if (sound && !SoundController.playing) {
             soundPool = new SoundPool.Builder().setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build()).build();
             soundID = soundPool.load(getApplicationContext(), R.raw.alarm_sound, 1);
             Log.d("sound", soundID + "");
-            soundPool.setOnLoadCompleteListener((soundPool1, i, i1) -> soundPool1.play(soundID, 1f, 1f, 0, -1, 1f));
+            soundPool.setOnLoadCompleteListener((soundPool1, i, i1) -> {
+                    soundPool1.play(soundID, 1f, 1f, 0, -1, 1f);
+                    SoundController.playSound();
+                Log.d("sound", "play");
+                SoundController.playSound();
+            });
         }
+
 
         initLayout();
     }
@@ -158,20 +168,29 @@ public class AlarmMCActivity extends AppCompatActivity {
 
     void addWrongProblem(Problem problem) {
         solved = true;
-        if(sound) soundPool.stop(soundID);
+        stopSound();
         if(vibration) vibrator.cancel();
+        SoundController.stopSound();
     }
 
     void addCorrectProblem(Problem problem) {
         solved = true;
-        if(sound) soundPool.stop(soundID);
+        stopSound();
         if(vibration) vibrator.cancel();
+        SoundController.stopSound();
+    }
+
+    void stopSound() {
+        if(sound) try {
+            soundPool.stop(soundID);
+        } catch (Exception e) {
+        }
     }
 
     // 강제로 끌때 동작
     @Override
     public void onPause() {
-        if(sound) soundPool.stop(soundID);
+        stopSound();
         if(vibration) vibrator.cancel();
         super.onPause();
         if(!solved) {
@@ -193,7 +212,7 @@ public class AlarmMCActivity extends AppCompatActivity {
 
     @Override
     public void onDestroy() {
-        if(sound) soundPool.stop(soundID);
+        stopSound();
         if(vibration) vibrator.cancel();
         if(!solved) {
             Intent intent = new Intent(this, AlarmMCActivity.class);

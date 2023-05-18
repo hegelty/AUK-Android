@@ -1,6 +1,9 @@
 package com.unrevr.munhaeryeok;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -9,5 +12,12 @@ public class SettingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.setting_layout);
+
+        findViewById(R.id.backwardButton).setOnClickListener(v -> finish());
+        findViewById(R.id.helpButton).setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://open.kakao.com/o/gObXhsif"));
+            startActivity(intent);
+        });
+
     }
 }

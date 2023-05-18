@@ -42,7 +42,7 @@ public class AlarmService extends Service {
         intent.putExtra("sound", sound);
         intent.putExtra("vibration", vibration);
         intent.putExtra("name", name);
-        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }

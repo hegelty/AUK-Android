@@ -26,7 +26,7 @@ public class AlarmReciver extends BroadcastReceiver {
         alarm_indent.putExtra("name", name);
         alarm_indent.putExtra("problem_type", problem_type);
 
-        alarm_indent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        alarm_indent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         alarm_indent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startService(alarm_indent);
 

@@ -8,6 +8,7 @@
     <uses-permission android:name = "android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
     <application
         android:allowBackup="true"
@@ -24,7 +25,9 @@
         <activity
             android:name=".Alarm.AlarmMCActivity"
             android:exported="false"
-            android:showOnLockScreen="true"/>
+            android:showOnLockScreen="true"
+            android:excludeFromRecents="true"
+            />
         <activity
             android:name=".Alarm.AlarmSFActivity"
             android:exported="false"

@@ -2,8 +2,6 @@ package com.unrevr.munhaeryeok;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -19,16 +17,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.skydoves.expandablelayout.ExpandableLayout;
 import com.unrevr.munhaeryeok.Alarm.AlarmController;
-import com.unrevr.munhaeryeok.alarm_list.AlarmListActivity;
 
 public class AlarmSettingActivity extends AppCompatActivity {
     int id;
-    SharedPreferences pref;
+    DataController dataCon;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.alarm_setting_layout);
-        pref = getSharedPreferences("alarm_data", MODE_PRIVATE);
+        dataCon = new DataController(getApplicationContext(), "alarm_data");
 
         this.id = getIntent().getIntExtra("id", 0);
         if(id!=0) {
@@ -275,10 +272,8 @@ public class AlarmSettingActivity extends AppCompatActivity {
     }
 
     int createID() {
-        int id = pref.getInt("last_id", 0);
-        SharedPreferences.Editor editor = pref.edit();
-        editor.putInt("last_id", id+1);
-        editor.apply();
+        int id = dataCon.getInt("last_id", 0);
+        dataCon.putInt("last_id", id+1);
         return id + 1;
     }
 
@@ -346,20 +341,17 @@ public class AlarmSettingActivity extends AppCompatActivity {
             if(id!=0) {
                 AlarmData alarmData = getAlarmData(id);
 
-                SharedPreferences.Editor editor = pref.edit();
-
-                String original = pref.getString("alarms_list", "").trim();
-                String[] list = original.split(";");
+                String original = dataCon.getString("alarms_list", "").trim();
+                String[] list = original.split("=");
                 String new_list = "";
                 for(String s : list) {
                     if(Integer.parseInt(s.split("\\|")[0]) == id) {
                         Log.d("deleteAlarm", "delete " + s);
                         continue;
                     }
-                    new_list += s + ";";
+                    new_list += s + "=";
                 }
-                editor.putString("alarms_list", new_list);
-                editor.apply();
+                dataCon.putString("alarms_list", new_list);
 
                 AlarmController alarmController = new AlarmController(getApplicationContext());
                 for(int i=0;i<7;i++) {
@@ -377,16 +369,14 @@ public class AlarmSettingActivity extends AppCompatActivity {
     }
 
     void saveAlarm(AlarmData alarmData) {
-        SharedPreferences.Editor editor = pref.edit();
-        String original = pref.getString("alarms_list", "").trim();
+        String original = dataCon.getString("alarms_list", "").trim();
         Log.d("saveAlarm", "data: " + alarmData.toString());
-        editor.putString("alarms_list", original + alarmData.toString() + ";");
-        editor.apply();
+        dataCon.putString("alarms_list", original + alarmData.toString() + "=");
     }
 
     AlarmData getAlarmData(int id) {
-        String original = pref.getString("alarms_list", "").trim();
-        String[] list = original.split(";");
+        String original = dataCon.getString("alarms_list", "").trim();
+        String[] list = original.split("=");
         for(String s : list) {
             if(Integer.parseInt(s.split("\\|")[0]) == id) {
                 return new AlarmData(s);
