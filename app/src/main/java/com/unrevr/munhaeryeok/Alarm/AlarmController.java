@@ -97,7 +97,7 @@ public class AlarmController {
         String new_list = "";
         for(String s : list) {
             if(Integer.parseInt(s.split("-")[0]) == id) continue;
-            new_list += s + "=";
+            if(s!=null) new_list += s + "=";
         }
         dataCon.putString("alarm_list", new_list);
 

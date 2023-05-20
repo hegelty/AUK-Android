@@ -349,7 +349,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
                         Log.d("deleteAlarm", "delete " + s);
                         continue;
                     }
-                    new_list += s + "=";
+                    if(s!=null) new_list += s + "=";
                 }
                 dataCon.putString("alarms_list", new_list);
 
