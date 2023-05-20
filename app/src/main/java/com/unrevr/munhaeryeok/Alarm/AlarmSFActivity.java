@@ -22,9 +22,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.unrevr.munhaeryeok.Problem;
 import com.unrevr.munhaeryeok.R;
-import com.unrevr.munhaeryeok.SoundController;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.ArrayList;
 
 public class AlarmSFActivity extends AppCompatActivity {
     int id, h, m;
@@ -33,8 +32,6 @@ public class AlarmSFActivity extends AppCompatActivity {
     int cnt;
     boolean solved;
     Vibrator vibrator;
-    SoundPool soundPool;
-    int soundID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +43,9 @@ public class AlarmSFActivity extends AppCompatActivity {
         setTurnScreenOn(true);
         setShowWhenLocked(true);
         this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+//        KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+//        keyguardManager.requestDismissKeyguard(this, null);
+
 
         solved = false;
 
@@ -61,26 +61,14 @@ public class AlarmSFActivity extends AppCompatActivity {
 
         cnt = 0;
 
+        if (sound) playSound();
         // vibrate until destroyed
         if (vibration) {
-            Log.d("vibration", "vibration");
             vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
             long[] pattern = {0, 1000, 500};
             vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0));
         }
 
-        // play alarm sound until destroyed
-        if (sound && !SoundController.playing) {
-            soundPool = new SoundPool.Builder().setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build()).build();
-            soundID = soundPool.load(getApplicationContext(), R.raw.alarm_sound, 1);
-            Log.d("sound", soundID + "");
-            soundPool.setOnLoadCompleteListener((soundPool1, i, i1) -> {
-                soundPool1.play(soundID, 1f, 1f, 0, -1, 1f);
-                SoundController.playSound();
-                Log.d("sound", "play");
-                SoundController.playSound();
-            });
-        }
         initLayout();
     }
 
@@ -159,32 +147,20 @@ public class AlarmSFActivity extends AppCompatActivity {
 
     void addWrongProblem(Problem problem) {
         solved = true;
-        stopSound();
+        if(sound) stopSound();
         if(vibration) vibrator.cancel();
-        SoundController.stopSound();
     }
 
     void addCorrectProblem(Problem problem) {
         solved = true;
-        stopSound();
+        if(sound) stopSound();
         if(vibration) vibrator.cancel();
-        SoundController.stopSound();
-    }
-
-    void stopSound() {
-        if(sound) try {
-            soundPool.stop(soundID);
-        } catch (Exception e) {
-        }
     }
 
     // 강제로 끌때 동작
     @Override
     public void onPause() {
-        if(sound) try {
-            soundPool.stop(soundID);
-        } catch (Exception e) {
-        }
+        if(sound) stopSound();
         if(vibration) vibrator.cancel();
         if(!solved) {
             Intent intent = new Intent(this, AlarmMCActivity.class);
@@ -204,7 +180,7 @@ public class AlarmSFActivity extends AppCompatActivity {
 
     @Override
     public void onDestroy() {
-        stopSound();
+        if(sound) stopSound();
         if(vibration) vibrator.cancel();
         if(!solved) {
             Intent intent = new Intent(this, AlarmMCActivity.class);
@@ -225,5 +201,40 @@ public class AlarmSFActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         // do nothing
+    }
+
+
+    SoundPool soundPool;
+    ArrayList<Integer> streamIDs = new ArrayList<>();
+    public void playSound() {
+        try {
+            Log.d("playSound", "playSound");
+            closePlayer();
+            soundPool = new SoundPool.Builder().setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build()).build();
+            soundPool.load(getApplicationContext(), R.raw.alarm_sound, 1);
+            soundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> {
+                streamIDs.add(soundPool.play(sampleId, 1, 1, 0, -1, 1));
+                Log.d("playSound", streamIDs.toString() + "");
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public void stopSound() {
+        try {
+            closePlayer();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void closePlayer(){
+        if (soundPool != null) {
+            for (int streamID : streamIDs) {
+                soundPool.stop(streamID);
+            }
+            soundPool.release();
+            soundPool = null;
+        }
     }
 }

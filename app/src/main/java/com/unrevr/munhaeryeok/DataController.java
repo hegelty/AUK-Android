@@ -1,6 +1,7 @@
 package com.unrevr.munhaeryeok;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -30,8 +31,10 @@ public class DataController {
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
                 String result = "";
-                while (bufferedReader.readLine() != null) {
-                    result += "\n" + bufferedReader.readLine();
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    Log.d("DataController", line);
+                    result += "\n" + line;
                 }
                 inputStreamReader.close();
                 inputStream.close();

@@ -4,7 +4,7 @@
 
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:ignore="ProtectedPermissions"/>
     <uses-permission android:name = "android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -24,20 +24,19 @@
         tools:targetApi="31">
         <activity
             android:name=".Alarm.AlarmMCActivity"
-            android:exported="false"
+            android:exported="true"
             android:showOnLockScreen="true"
-            android:excludeFromRecents="true"
-            />
+            android:excludeFromRecents="true" />
         <activity
             android:name=".Alarm.AlarmSFActivity"
-            android:exported="false"
-            android:showOnLockScreen="true" />
+            android:exported="true"
+            android:showOnLockScreen="true"
+            android:excludeFromRecents="true" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

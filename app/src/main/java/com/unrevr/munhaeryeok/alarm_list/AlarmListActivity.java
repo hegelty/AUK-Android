@@ -40,11 +40,13 @@ public class AlarmListActivity extends AppCompatActivity {
         recyclerView.setAdapter(null);
         DataController dataCon = new DataController(getApplicationContext(),"alarm_data");
         String original = dataCon.getString("alarms_list", "").trim();
+        Log.d("AlarmListActivity", original);
         ArrayList<AlarmData> alarmDataList = new ArrayList<>();
         if(original != "") {
             String[] list = original.split("=");
             for (String s : list) {
-                alarmDataList.add(new AlarmData(s));
+                Log.d("AlarmListActivity", s);
+                if(s!=null) alarmDataList.add(new AlarmData(s));
             }
             adapter = new AlarmListAdapter(alarmDataList);
         }

@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">AUK</string>
-    <string name="app_version">alpha 2305181</string>
+    <string name="app_version">beta 1</string>
     <string name="opensource_licence">Open Source Licenses\n---------------------------------------------------\nExpandableLayout\nhttps://github.com/skydoves/ExpandableLayout\n\nCopyright 2019 skydoves (Jaewoong Eum)\n\nLicensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n\n   http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software\ndistributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\nSee the License for the specific language governing permissions and\nlimitations under the License.\n---------------------------------------------------\n---------------------------------------------------\n---------------------------------------------------\n---------------------------------------------------</string>
+    <string name="developers">개발자 나태양\n디자인 인유민\n문제/기획 최주연\n문제/기획 박주완\n문제 박찬웅</string>
 </resources>
