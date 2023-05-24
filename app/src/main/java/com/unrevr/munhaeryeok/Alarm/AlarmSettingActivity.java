@@ -524,9 +524,53 @@ public class AlarmSettingActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("알람 수정")
                 .setMessage("수정한 내용을 저장하지 않고 나가시겠습니까?")
-                .setPositiveButton("저장하지 않고 나가기", (dialog, which) -> finish())
+                .setPositiveButton("나가기", (dialog, which) -> finish())
                 .setNeutralButton("취소", null)
                 .setNegativeButton("저장 후 나가기", (dialog, which) -> {
+                    EditText nameEditText = findViewById(R.id.nameEditText);
+                    String name = nameEditText.getText().toString();
+                    if(name.trim().length()==0) {
+                        new AlertDialog.Builder(this)
+                                .setTitle("오류")
+                                .setMessage("알람 이름을 입력해주세요.")
+                                .setPositiveButton("확인", (dialog2, which2) -> {
+                                }).show();
+                    }
+                    ExpandableLayout dayExpandableLayout = findViewById(R.id.dayExpandableLayout);
+                    TextView dayTextView = dayExpandableLayout.parentLayout.findViewById(R.id.daySetTextView);
+                    String day = dayTextView.getText().toString();
+                    if(day.trim().length()==0) {
+                        new AlertDialog.Builder(this)
+                                .setTitle("오류")
+                                .setMessage("요일을 선택해주세요.")
+                                .setPositiveButton("확인", (dialog2, which2) -> {
+                                }).show();
+                        return;
+                    }
+
+                    ExpandableLayout soundExpandableLayout = findViewById(R.id.soundExpandableLayout);
+                    TextView soundTextView = soundExpandableLayout.parentLayout.findViewById(R.id.soundSetTextView);
+                    String sound = soundTextView.getText().toString();
+                    if(sound.trim().length()==0) {
+                        new AlertDialog.Builder(this)
+                                .setTitle("오류")
+                                .setMessage("알람 소리를 선택해주세요.")
+                                .setPositiveButton("확인", (dialog2, which2) -> {
+                                }).show();
+                        return;
+                    }
+
+                    ExpandableLayout problemExpandableLayout = findViewById(R.id.problemExpandableLayout);
+                    TextView problemTextView = problemExpandableLayout.parentLayout.findViewById(R.id.problemSetTextView);
+                    String problem = problemTextView.getText().toString();
+                    if(problem.trim().length()==0) {
+                        new AlertDialog.Builder(this)
+                                .setTitle("오류")
+                                .setMessage("문제를 선택해주세요.")
+                                .setPositiveButton("확인", (dialog2, which2) -> {
+                                }).show();
+                        return;
+                    }
                     setAlarm();
                     finish();
                 })
