@@ -5,4 +5,7 @@
     <color name="red">#ffd84d46</color>
     <color name="blue">#ff458ef7</color>
     <color name="background">#ffeeeeee</color>
+    <color name="gray">#ff888888</color>
+    <color name="tblack">#FF000000</color>
+    <color name="twhite">#FFFFFFFF</color>
 </resources>

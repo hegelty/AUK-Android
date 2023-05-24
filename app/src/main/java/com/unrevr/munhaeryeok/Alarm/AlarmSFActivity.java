@@ -32,6 +32,7 @@ public class AlarmSFActivity extends AppCompatActivity {
     int cnt;
     boolean solved;
     Vibrator vibrator;
+    KeyguardManager keyguardManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +44,8 @@ public class AlarmSFActivity extends AppCompatActivity {
         setTurnScreenOn(true);
         setShowWhenLocked(true);
         this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-//        KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-//        keyguardManager.requestDismissKeyguard(this, null);
+        keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+        keyguardManager.requestDismissKeyguard(this, null);
 
 
         solved = false;
@@ -162,7 +163,7 @@ public class AlarmSFActivity extends AppCompatActivity {
     public void onPause() {
         if(sound) stopSound();
         if(vibration) vibrator.cancel();
-        if(!solved) {
+        if(!solved&&!keyguardManager.isKeyguardLocked()) {
             Intent intent = new Intent(this, AlarmMCActivity.class);
             intent.putExtra("id", id);
             intent.putExtra("h", h);

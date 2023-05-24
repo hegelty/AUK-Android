@@ -2,17 +2,40 @@ package com.unrevr.munhaeryeok;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.loader.content.AsyncTaskLoader;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.widget.Button;
+import android.widget.TextView;
 
+import com.google.android.gms.tasks.Task;
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.install.model.UpdateAvailability;
 import com.unrevr.munhaeryeok.alarm_list.AlarmListActivity;
+
+import org.w3c.dom.Text;
+
+import java.util.HashMap;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
     public static Context context;
@@ -26,7 +49,16 @@ public class MainActivity extends AppCompatActivity {
         checkFirstRun();
         getOverlayPermission();
 
+        updateAppIfAvailable();
+
+        setTodayContents();
+
         findViewById(R.id.upcommingAlarm).setOnClickListener(v -> {
+            Intent intent = new Intent(getApplicationContext(), AlarmListActivity.class);
+            startActivity(intent);
+        });
+
+        findViewById(R.id.moreText).setOnClickListener(v -> {
             Intent intent = new Intent(getApplicationContext(), AlarmListActivity.class);
             startActivity(intent);
         });
@@ -47,8 +79,10 @@ public class MainActivity extends AppCompatActivity {
             editor.apply();
 
             DataController dataCon = new DataController(getApplicationContext(), "alarm_data");
-            dataCon.putInt("last_alarm_id", 0);
-            dataCon.putString("alarm_list", "");
+            if(dataCon.getInt("last_alarm_id", 0) == 0) {
+                dataCon.putInt("last_alarm_id", 0);
+                dataCon.putString("alarm_list", "");
+            }
         }
     }
 
@@ -64,6 +98,90 @@ public class MainActivity extends AppCompatActivity {
                     }
             ).setNegativeButton("아니오", (dialog, id) -> finish()).setCancelable(false);
             builder.create().show();
+        }
+    }
+
+    void updateAppIfAvailable() {
+        AppUpdateManager appUpdateManager = AppUpdateManagerFactory.create(getApplicationContext());
+        Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
+
+        appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
+            if(appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                    && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
+                try {
+                    appUpdateManager.startUpdateFlowForResult(appUpdateInfo, AppUpdateType.IMMEDIATE, this, 1);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        Network network = connectivityManager.getActiveNetwork();
+        NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
+        return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+    }
+
+    void setTodayContents() {
+        TextView todayTitle1 = findViewById(R.id.todayTitle1);
+        TextView todayTitle2 = findViewById(R.id.todayTitle2);
+        TextView author1 = findViewById(R.id.author1);
+        TextView author2 = findViewById(R.id.author2);
+        TextView todayContent1 = findViewById(R.id.todayContent1);
+        TextView todayContent2 = findViewById(R.id.todayContent2);
+        Button readButton1 = findViewById(R.id.readButton1);
+        Button readButton2 = findViewById(R.id.readButton2);
+
+        Disposable backgroundtask = null;
+        if(isNetworkAvailable()) {
+            backgroundtask = Observable.fromCallable(() -> {
+                TodayContents todayContents = new TodayContents();
+                todayContents.getColumn(0);
+
+                return todayContents;
+            })
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe((todayContents) -> {
+                        todayTitle1.setText(todayContents.title);
+                        author1.setText(todayContents.author);
+                        todayContent1.setText(todayContents.content);
+                        TodayContents finalTodayContents = todayContents;
+                        readButton1.setOnClickListener(v -> {
+                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(finalTodayContents.url));
+                            startActivity(intent);
+                        });
+            });
+
+            backgroundtask = Observable.fromCallable(() -> {
+                        TodayContents todayContents = new TodayContents();
+                        todayContents.getColumn(1);
+
+                        return todayContents;
+                    })
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe((todayContents) -> {
+                        todayTitle2.setText(todayContents.title);
+                        author2.setText(todayContents.author);
+                        todayContent2.setText(todayContents.content);
+                        TodayContents finalTodayContents = todayContents;
+                        readButton2.setOnClickListener(v -> {
+                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(finalTodayContents.url));
+                            startActivity(intent);
+                        });
+                    });
+        } else {
+            todayTitle1.setText("오늘의 문해력");
+            todayTitle2.setText("오늘의 문해력");
+            author1.setText("인터넷 연결이 필요합니다.");
+            author2.setText("인터넷 연결이 필요합니다.");
+            todayContent1.setText("인터넷 연결이 필요합니다.");
+            todayContent2.setText("인터넷 연결이 필요합니다.");
+            readButton1.setOnClickListener(v -> {});
+            readButton2.setOnClickListener(v -> {});
         }
     }
 }

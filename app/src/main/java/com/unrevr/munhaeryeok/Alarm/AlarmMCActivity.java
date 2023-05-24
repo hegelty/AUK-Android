@@ -30,6 +30,7 @@ public class AlarmMCActivity extends AppCompatActivity {
     boolean solved;
 
     Vibrator vibrator;
+    KeyguardManager keyguardManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +44,7 @@ public class AlarmMCActivity extends AppCompatActivity {
         setTurnScreenOn(true);
         setShowWhenLocked(true);
         this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+        keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
         keyguardManager.requestDismissKeyguard(this, null);
 
         solved = false;
@@ -164,28 +165,28 @@ public class AlarmMCActivity extends AppCompatActivity {
         if(vibration) vibrator.cancel();
     }
 
-//    // 강제로 끌때 동작
-//    @Override
-//    public void onPause() {
-//        if(sound) stopSound();
-//        if(vibration) vibrator.cancel();
-//        super.onPause();
-//        if(!solved) {
-//            Intent intent = new Intent(this, AlarmMCActivity.class);
-//            intent.putExtra("id", id);
-//            intent.putExtra("h", h);
-//            intent.putExtra("m", m);
-//            intent.putExtra("sound", sound);
-//            intent.putExtra("vibration", vibration);
-//            intent.putExtra("problem_id", problem.id);
-//            startActivity(intent);
-//
-//            solved = true;
-//
-//            // finish this activity
-//            finish();
-//        }
-//    }
+    // 강제로 끌때 동작
+    @Override
+    public void onPause() {
+        if(sound) stopSound();
+        if(vibration) vibrator.cancel();
+        super.onPause();
+        if(!solved&&!keyguardManager.isKeyguardLocked()) {
+            Intent intent = new Intent(this, AlarmMCActivity.class);
+            intent.putExtra("id", id);
+            intent.putExtra("h", h);
+            intent.putExtra("m", m);
+            intent.putExtra("sound", sound);
+            intent.putExtra("vibration", vibration);
+            intent.putExtra("problem_id", problem.id);
+            startActivity(intent);
+
+            solved = true;
+
+            // finish this activity
+            finish();
+        }
+    }
 
     @Override
     public void onDestroy() {

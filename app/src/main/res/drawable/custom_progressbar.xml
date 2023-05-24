@@ -4,11 +4,17 @@
         <clip>
             <shape>
                 <corners android:radius="20dp" />
-                <gradient
-                    android:angle="0"
-                    android:startColor="@color/red"
-                    android:endColor="@color/blue" />
+                <solid android:color="@color/blue"/>
             </shape>
         </clip>
+    </item>
+    <item android:id="@android:id/progress">
+
+        <scale android:scaleWidth="100%">
+            <shape>
+                <corners android:radius="0dp"/>
+                <solid android:color="@color/blue"/>
+            </shape>
+        </scale>
     </item>
 </selector>

@@ -1,6 +1,29 @@
 <resources>
     <string name="app_name">AUK</string>
-    <string name="app_version">beta 1</string>
-    <string name="opensource_licence">Open Source Licenses\n---------------------------------------------------\nExpandableLayout\nhttps://github.com/skydoves/ExpandableLayout\n\nCopyright 2019 skydoves (Jaewoong Eum)\n\nLicensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n\n   http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software\ndistributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\nSee the License for the specific language governing permissions and\nlimitations under the License.\n---------------------------------------------------\n---------------------------------------------------\n---------------------------------------------------\n---------------------------------------------------</string>
+    <string name="app_version">beta 2</string>
+    <string name="opensource_licence">Open Source Licenses\n
+        -----------------------------------\n
+        ExpandableLayout\n
+        https://github.com/skydoves/ExpandableLayout\n\n
+
+        Copyright 2019 skydoves (Jaewoong Eum)\n\nLicensed under the Apache License, Version 2.0 (the \"License\");\n
+        you may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n\n
+        http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software\n
+        distributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n
+        See the License for the specific language governing permissions and\n
+        limitations under the License.\n
+        -----------------------------------\n
+        jsoup\n
+        https://jsoup.org/\n\n
+        The MIT License\n
+Copyright © 2009 - 2023 Jonathan Hedley (https://jsoup.org/)\n\n
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\n
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\n
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n
+    -----------------------------------\n
+    </string>
     <string name="developers">개발자 나태양\n디자인 인유민\n문제/기획 최주연\n문제/기획 박주완\n문제 박찬웅</string>
 </resources>

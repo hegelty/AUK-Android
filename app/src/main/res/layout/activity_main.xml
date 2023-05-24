@@ -64,6 +64,7 @@
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/black"
+            android:layout_marginTop="10dp"
             />
 
         <LinearLayout
@@ -72,6 +73,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:elevation="4dp"
             android:background="@drawable/round_corner_black">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -168,7 +170,143 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/moreText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:text="더보기"
+            android:textAlignment="center"
+            android:textSize="18sp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"/>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="오늘의 문해력"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginTop="10dp"
+            />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="15dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/todayMunhae1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/round_corner_white"
+                    android:clickable="true"
+                    android:elevation="4dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/todayTitle1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="15dp"
+                        android:layout_marginTop="10dp"
+                        android:text="전세의 배신"
+                        android:textColor="@color/tblack"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/author1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="15dp"
+                        android:text="심윤희 칼럼"
+                        android:textColor="@color/gray" />
+
+                    <TextView
+                        android:id="@+id/todayContent1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="18dp"
+                        android:layout_marginEnd="18dp"
+                        android:text=' "내 전세금은 돌려받을 수 있는 건가" "집주인을 어떻게 믿고 거액의 전세금을 맡기냐". 인천 미추홀구를 비롯해 전국에서 전세사기가 동시다발적...'
+                        android:textColor="@color/tblack"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/readButton1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="35dp"
+                        android:layout_gravity="right"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="15dp"
+                        android:layout_marginBottom="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/round_corner_blue"
+                        android:text="바로 읽기"
+                        android:textColor="@color/twhite" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/todayMunhae2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/round_corner_white"
+                    android:clickable="true"
+                    android:elevation="4dp"
+                    android:layout_marginTop="20dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/todayTitle2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="15dp"
+                        android:layout_marginTop="10dp"
+                        android:text="전세의 배신"
+                        android:textColor="@color/tblack"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/author2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="15dp"
+                        android:text="심윤희 칼럼"
+                        android:textColor="@color/gray" />
+
+                    <TextView
+                        android:id="@+id/todayContent2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="18dp"
+                        android:layout_marginEnd="18dp"
+                        android:text=' "내 전세금은 돌려받을 수 있는 건가" "집주인을 어떻게 믿고 거액의 전세금을 맡기냐". 인천 미추홀구를 비롯해 전국에서 전세사기가 동시다발적...'
+                        android:textColor="@color/tblack"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/readButton2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="35dp"
+                        android:layout_gravity="right"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="15dp"
+                        android:layout_marginBottom="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/round_corner_blue"
+                        android:text="바로 읽기"
+                        android:textColor="@color/twhite" />
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
