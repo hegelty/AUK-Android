@@ -4,12 +4,14 @@
 
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:ignore="ProtectedPermissions"/>
-    <uses-permission android:name = "android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
@@ -19,36 +21,40 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
+        android:screenOrientation="portrait"
         android:supportsRtl="true"
         android:theme="@style/Theme.Munhaeryeok"
         android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
-        android:screenOrientation="portrait"
         tools:targetApi="31">
         <activity
+            android:name=".Alarm.WrongAlarmsListActivity"
+            android:exported="false" />
+        <activity
             android:name=".Alarm.AlarmMCActivity"
+            android:excludeFromRecents="true"
             android:exported="true"
-            android:showOnLockScreen="true"
-            android:excludeFromRecents="true" />
+            android:showOnLockScreen="true" />
         <activity
             android:name=".Alarm.AlarmSFActivity"
+            android:excludeFromRecents="true"
             android:exported="true"
-            android:showOnLockScreen="true"
-            android:excludeFromRecents="true" />
+            android:showOnLockScreen="true" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AlarmSettingActivity" />
-        <activity android:name=".alarm_list.AlarmListActivity" />
+        <activity android:name=".Alarm.AlarmSettingActivity" />
+        <activity android:name=".Alarm.AlarmListActivity" />
         <activity android:name=".SettingActivity" />
 
         <service android:name=".Alarm.AlarmService" />
-        <receiver android:name=".Alarm.AlarmReciver"/>
-        
+
+        <receiver android:name=".Alarm.AlarmReciver" />
     </application>
 
 </manifest>

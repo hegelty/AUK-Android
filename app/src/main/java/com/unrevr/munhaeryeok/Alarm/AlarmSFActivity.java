@@ -22,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.unrevr.munhaeryeok.Problem;
 import com.unrevr.munhaeryeok.R;
+import com.unrevr.munhaeryeok.UserInfo;
 
 import java.util.ArrayList;
 
@@ -38,7 +39,7 @@ public class AlarmSFActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.alarm_sf_layout);
+        setContentView(R.layout.alarm_layout_sf);
         Intent intent = getIntent();
 
         setTurnScreenOn(true);
@@ -147,12 +148,14 @@ public class AlarmSFActivity extends AppCompatActivity {
     }
 
     void addWrongProblem(Problem problem) {
+        UserInfo.getInstance(getApplicationContext()).wrong(problem.id, Problem.SF);
         solved = true;
         if(sound) stopSound();
         if(vibration) vibrator.cancel();
     }
 
     void addCorrectProblem(Problem problem) {
+        UserInfo.getInstance(getApplicationContext()).solve();
         solved = true;
         if(sound) stopSound();
         if(vibration) vibrator.cancel();

@@ -41,15 +41,17 @@
             android:text="당신의 문해력" />
 
         <ProgressBar
-            android:id="@+id/munhaeryeok_progressbar"
+            android:id="@+id/progressBar"
             style="?android:attr/progressBarStyleHorizontal"
             android:progressDrawable="@drawable/custom_progressbar"
             android:layout_width="match_parent"
             android:layout_height="30dp"
             android:elevation="4dp"
-            android:progress="80" />
+            android:progress="80"
+            android:clickable="true"/>
 
         <TextView
+            android:id="@+id/progressText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="80/100"

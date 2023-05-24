@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import com.unrevr.munhaeryeok.Problem;
 import com.unrevr.munhaeryeok.R;
+import com.unrevr.munhaeryeok.UserInfo;
 
 import java.util.ArrayList;
 
@@ -36,7 +37,7 @@ public class AlarmMCActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.alarm_mc_layout);
+        setContentView(R.layout.alarm_layout_mc);
         Intent intent = getIntent();
 
         Log.d("AlarmMCActivity", "onCreate");
@@ -154,12 +155,14 @@ public class AlarmMCActivity extends AppCompatActivity {
     }
 
     void addWrongProblem(Problem problem) {
+        UserInfo.getInstance(getApplicationContext()).wrong(problem.id, Problem.MC);
         solved = true;
         if(sound) stopSound();
         if(vibration) vibrator.cancel();
     }
 
     void addCorrectProblem(Problem problem) {
+        UserInfo.getInstance(getApplicationContext()).solve();
         solved = true;
         if(sound) stopSound();
         if(vibration) vibrator.cancel();

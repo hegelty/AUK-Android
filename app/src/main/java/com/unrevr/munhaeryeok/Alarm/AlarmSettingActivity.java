@@ -1,7 +1,8 @@
-package com.unrevr.munhaeryeok;
+package com.unrevr.munhaeryeok.Alarm;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -13,10 +14,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.skydoves.expandablelayout.ExpandableLayout;
-import com.unrevr.munhaeryeok.Alarm.AlarmController;
+import com.unrevr.munhaeryeok.DataController;
+import com.unrevr.munhaeryeok.R;
 
 public class AlarmSettingActivity extends AppCompatActivity {
     int id;
@@ -516,10 +519,17 @@ public class AlarmSettingActivity extends AppCompatActivity {
         }
     }
 
-//    @Override
-//    public void onDestroy() {
-//        super.onDestroy();
-//        Intent intent = new Intent(this, AlarmListActivity.class);
-//        startActivity(intent);
-//    }
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this)
+                .setTitle("알람 수정")
+                .setMessage("수정한 내용을 저장하지 않고 나가시겠습니까?")
+                .setPositiveButton("저장하지 않고 나가기", (dialog, which) -> finish())
+                .setNeutralButton("취소", null)
+                .setNegativeButton("저장 후 나가기", (dialog, which) -> {
+                    setAlarm();
+                    finish();
+                })
+                .show();
+    }
 }

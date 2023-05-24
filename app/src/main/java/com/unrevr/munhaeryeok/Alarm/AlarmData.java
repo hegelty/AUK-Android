@@ -1,4 +1,4 @@
-package com.unrevr.munhaeryeok;
+package com.unrevr.munhaeryeok.Alarm;
 
 import android.util.Log;
 

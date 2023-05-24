@@ -1,4 +1,4 @@
-package com.unrevr.munhaeryeok.alarm_list;
+package com.unrevr.munhaeryeok.Alarm;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,8 +8,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.unrevr.munhaeryeok.AlarmData;
-import com.unrevr.munhaeryeok.AlarmSettingActivity;
 import com.unrevr.munhaeryeok.DataController;
 import com.unrevr.munhaeryeok.R;
 

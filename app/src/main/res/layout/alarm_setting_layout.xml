@@ -130,8 +130,8 @@
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         app:expandable_isExpanded="false"
-                        app:expandable_parentLayout="@layout/day_select_parent"
-                        app:expandable_secondLayout="@layout/day_select_second"
+                        app:expandable_parentLayout="@layout/alarm_setting_day_select_parent"
+                        app:expandable_secondLayout="@layout/alarm_setting_day_select_second"
                         app:expandable_showSpinner="false" />
 
                     <com.skydoves.expandablelayout.ExpandableLayout
@@ -140,8 +140,8 @@
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         app:expandable_isExpanded="false"
-                        app:expandable_parentLayout="@layout/sound_select_parent"
-                        app:expandable_secondLayout="@layout/sound_select_second"
+                        app:expandable_parentLayout="@layout/alarm_setting_sound_select_parent"
+                        app:expandable_secondLayout="@layout/alarm_setting_sound_select_second"
                         app:expandable_showSpinner="false" />
 
                     <com.skydoves.expandablelayout.ExpandableLayout
@@ -150,8 +150,8 @@
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         app:expandable_isExpanded="false"
-                        app:expandable_parentLayout="@layout/problem_select_parent"
-                        app:expandable_secondLayout="@layout/problem_select_second"
+                        app:expandable_parentLayout="@layout/alarm_setting_problem_select_parent"
+                        app:expandable_secondLayout="@layout/alarm_setting_problem_select_second"
                         app:expandable_showSpinner="false" />
 
                 </LinearLayout>
