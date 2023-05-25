@@ -40,7 +40,7 @@ public class AlarmMCActivity extends AppCompatActivity {
         setContentView(R.layout.alarm_layout_mc);
         Intent intent = getIntent();
 
-        Log.d("AlarmMCActivity", "onCreate");
+        Log.d("AlarmMCActivity", "onCreate: MC");
 
         setTurnScreenOn(true);
         setShowWhenLocked(true);
@@ -60,6 +60,7 @@ public class AlarmMCActivity extends AppCompatActivity {
         if(problem_id!=0) problem = new Problem(Problem.MC, problem_id);
         else problem = new Problem(Problem.MC);
 
+        Log.d("AlarmSFActivity", "onCreate: id: " + id + ", h: " + h + ", m: " + m + ", sound: " + sound + ", vibration: " + vibration);
         cnt = 0;
 
         if (sound) playSound();

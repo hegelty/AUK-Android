@@ -1,6 +1,7 @@
 package com.unrevr.munhaeryeok;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -32,16 +33,16 @@ public class UserInfo {
 
         score = dataController.getInt("score", 0);
 
-        String[] wrongSFProblems_s = dataController.getString("wrong_sf_problems", "").split(",");
+        String[] wrongSFProblems_s = dataController.getString("wrong_sf_problems", "").trim().split(",");
         wrongSFProblems = new LinkedList<>();
         for (String wrongSFProblems_ : wrongSFProblems_s) {
-            if(!Objects.equals(wrongSFProblems_, "")) wrongSFProblems.add(Integer.parseInt(wrongSFProblems_));
+            if(!Objects.equals(wrongSFProblems_, "")&&wrongSFProblems_!=null) wrongSFProblems.add(Integer.parseInt(wrongSFProblems_));
         }
 
-        String[] wrongMCProblems_s = dataController.getString("wrong_mc_problems", "").split(",");
+        String[] wrongMCProblems_s = dataController.getString("wrong_mc_problems", "").trim().split(",");
         wrongMCProblems = new LinkedList<>();
         for (String wrongMCProblems_ : wrongMCProblems_s) {
-            if(!Objects.equals(wrongMCProblems_, "")) wrongMCProblems.add(Integer.parseInt(wrongMCProblems_));
+            if(!Objects.equals(wrongMCProblems_, "")&&wrongMCProblems_!=null) wrongMCProblems.add(Integer.parseInt(wrongMCProblems_));
         }
 
         accuracy = dataController.getInt("accuracy", 0);
@@ -70,11 +71,19 @@ public class UserInfo {
 
         if(type == 1) {
             if(!wrongMCProblems.contains(id)) wrongMCProblems.add(id);
-            dataController.putString("wrong_mc_problems", wrongMCProblems.toString());
+            String wrongMCProblems_ = "";
+            for (Integer wrongMCProblem : wrongMCProblems) {
+                wrongMCProblems_ += wrongMCProblem + ",";
+            }
+            dataController.putString("wrong_mc_problems", wrongMCProblems_);
         }
         else {
             if(!wrongSFProblems.contains(id)) wrongSFProblems.add(id);
-            dataController.putString("wrong_sf_problems", wrongSFProblems.toString());
+            String wrongSFProblems_ = "";
+            for (Integer wrongSFProblem : wrongSFProblems) {
+                wrongSFProblems_ += wrongSFProblem + ",";
+            }
+            dataController.putString("wrong_sf_problems", wrongSFProblems_);
         }
 
         return score;

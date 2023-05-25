@@ -42,6 +42,8 @@ public class AlarmSFActivity extends AppCompatActivity {
         setContentView(R.layout.alarm_layout_sf);
         Intent intent = getIntent();
 
+        Log.d("AlarmSFActivity", "onCreate: SF");
+
         setTurnScreenOn(true);
         setShowWhenLocked(true);
         this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -60,6 +62,8 @@ public class AlarmSFActivity extends AppCompatActivity {
         int problem_id = intent.getIntExtra("id", 0);
         if(problem_id!=0) problem = new Problem(Problem.SF, problem_id);
         else problem = new Problem(Problem.SF);
+
+        Log.d("AlarmSFActivity", "onCreate: id: " + id + ", h: " + h + ", m: " + m + ", sound: " + sound + ", vibration: " + vibration);
 
         cnt = 0;
 
