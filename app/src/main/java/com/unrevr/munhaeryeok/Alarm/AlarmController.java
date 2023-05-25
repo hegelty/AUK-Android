@@ -162,7 +162,11 @@ public class AlarmController {
             }
         }
         Log.d("getNearestAlarm", "getNearestAlarm: " + nearest);
-        return Integer.parseInt(nearest.split("-")[0]);
+        try {
+            return Integer.parseInt(nearest.split("-")[0]);
+        } catch (Exception e) {
+            return 0;
+        }
     }
 }
 
