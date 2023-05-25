@@ -13,9 +13,11 @@ import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -25,6 +27,8 @@ import com.google.android.play.core.appupdate.AppUpdateManager;
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
 import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.install.model.UpdateAvailability;
+import com.unrevr.munhaeryeok.Alarm.AlarmController;
+import com.unrevr.munhaeryeok.Alarm.AlarmData;
 import com.unrevr.munhaeryeok.Alarm.AlarmListActivity;
 import com.unrevr.munhaeryeok.Alarm.WrongAlarmsListActivity;
 
@@ -49,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         getOverlayPermission();
         updateAppIfAvailable();
         setProgressBar();
+        setNearestAlarm();
 
         findViewById(R.id.upcommingAlarm).setOnClickListener(v -> {
             Intent intent = new Intent(getApplicationContext(), AlarmListActivity.class);
@@ -156,6 +161,73 @@ public class MainActivity extends AppCompatActivity {
         progressText.setText(UserInfo.score + " / 100");
     }
 
+    void setNearestAlarm() {
+        AlarmController alarmController = new AlarmController(getApplicationContext());
+        int nearestAlarmId = alarmController.getNearestAlarmId();
+        if(nearestAlarmId == 0) {
+            TextView nameTextView = findViewById(R.id.nameTextView);
+            nameTextView.setText("울릴 알람이 없습니다.");
+            TextView timeTextView = findViewById(R.id.timeTextView);
+            timeTextView.setText("00:00");
+            TextView amfmTextView = findViewById(R.id.amfmTextView);
+            amfmTextView.setText("");
+            TextView dayTextView = findViewById(R.id.dayTextView);
+            dayTextView.setText("");
+            CheckBox favoriteCheckBox = findViewById(R.id.favoriteCheckBox);
+            favoriteCheckBox.setVisibility(View.INVISIBLE);
+            return;
+        }
+        DataController dataCon = new DataController(getApplicationContext(),"alarm_data");
+        String alarms_list = dataCon.getString("alarms_list", "").trim();
+        String[] list = alarms_list.split("=");
+        for (String s : list) {
+            Log.d("MainActivity", s);
+            if(s!=null) {
+                AlarmData alarmData = new AlarmData(s);
+                Log.d("MainActivity", alarmData.toString());
+                for(int id: alarmData.alarm_ids) {
+                    if(id == nearestAlarmId) {
+                        TextView nameTextView = findViewById(R.id.nameTextView);
+                        TextView timeTextView = findViewById(R.id.timeTextView);
+                        TextView amfmTextView = findViewById(R.id.amfmTextView);
+                        TextView dayTextView = findViewById(R.id.dayTextView);
+                        CheckBox favoriteCheckBox = findViewById(R.id.favoriteCheckBox);
+
+                        nameTextView.setText(alarmData.name);
+                        int h = alarmData.h;
+                        if (h >= 12) {
+                            amfmTextView.setText("PM");
+                            if(h==12) {
+                                timeTextView.setText("12:" + String.format("%02d",alarmData.m));
+                            } else {
+                                timeTextView.setText(String.format("%02d",alarmData.h%12) + ": " + String.format("%02d",alarmData.m));
+                            }
+                        } else {
+                            amfmTextView.setText("AM");
+                            if(h==0) {
+                                timeTextView.setText("12:" + String.format("%02d",alarmData.m));
+                            } else {
+                                timeTextView.setText(String.format("%02d",alarmData.h) + ":" + String.format("%02d",alarmData.m));
+                            }
+                        }
+                        String days = "";
+                        String[] day = {"일", "월", "화", "수", "목", "금", "토"};
+                        for(int i=0;i<7;i++) {
+                            if(alarmData.alarm_ids[i]!=0) {
+                                if(days=="") days = day[i];
+                                else days = days + ", " + day[i];
+                            }
+                        }
+                        dayTextView.setText(days);
+                        favoriteCheckBox.setVisibility(View.VISIBLE);
+                        favoriteCheckBox.setChecked(alarmData.favorite);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
     void setTodayContents() {
         AtomicBoolean contents1Loaded = new AtomicBoolean(false);
         AtomicBoolean contents2Loaded = new AtomicBoolean(false);
@@ -234,5 +306,6 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         setProgressBar();
+        setNearestAlarm();
     }
 }

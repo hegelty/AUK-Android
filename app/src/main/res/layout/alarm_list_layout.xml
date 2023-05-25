@@ -56,7 +56,7 @@
                 android:layout_height="35dp"
                 android:text="전체"
                 android:textColor="@color/white"
-                android:background="@drawable/round_corner_black"
+                android:background="@drawable/round_corner_blue"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.05"

@@ -1,9 +1,12 @@
 package com.unrevr.munhaeryeok.Alarm;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -13,8 +16,41 @@ import com.unrevr.munhaeryeok.R;
 
 import java.util.ArrayList;
 
-public class AlarmListAdapter extends RecyclerView.Adapter<AlarmListAdapter.ViewHolder> {
+public class AlarmListAdapter extends RecyclerView.Adapter<AlarmListAdapter.ViewHolder> implements Filterable {
     private ArrayList<AlarmData> alarmItems;
+    private ArrayList<AlarmData> alarmItemsFull;
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+                String query = charSequence.toString();
+                if(query.equals("0")) {
+                    alarmItems = alarmItemsFull;
+                    Log.d("AlarmListAdapter", "0");
+                } else {
+                    alarmItemsFull = alarmItems;
+                    ArrayList<AlarmData> filteredList = new ArrayList<>();
+                    for(AlarmData alarmData : alarmItems) {
+                        if(alarmData.favorite) {
+                            filteredList.add(alarmData);
+                        }
+                    }
+                    alarmItems = filteredList;
+                }
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = alarmItems;
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                alarmItems = (ArrayList<AlarmData>) filterResults.values;
+                notifyDataSetChanged();
+            }
+        };
+    }
 
     // onclick listener
     public interface OnItemClickListener {
@@ -28,6 +64,7 @@ public class AlarmListAdapter extends RecyclerView.Adapter<AlarmListAdapter.View
     // adaptor
     AlarmListAdapter(ArrayList<AlarmData> alarmItems) {
         this.alarmItems = alarmItems;
+        alarmItemsFull = alarmItems;
     }
 
     @NonNull

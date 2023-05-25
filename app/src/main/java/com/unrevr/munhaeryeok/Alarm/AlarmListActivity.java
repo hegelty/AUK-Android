@@ -15,6 +15,7 @@ import java.util.ArrayList;
 
 public class AlarmListActivity extends AppCompatActivity {
     AlarmListAdapter adapter;
+    Boolean isFavorite = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,6 +31,22 @@ public class AlarmListActivity extends AppCompatActivity {
         findViewById(R.id.addButton).setOnClickListener(v -> {
             Intent intent = new Intent(this, AlarmSettingActivity.class);
             startActivity(intent);
+        });
+        findViewById(R.id.favoriteButton).setOnClickListener(v -> {
+            if(!isFavorite) {
+                isFavorite = true;
+                findViewById(R.id.favoriteButton).setBackgroundResource(R.drawable.round_corner_blue);
+                findViewById(R.id.allButton).setBackgroundResource(R.drawable.round_corner_black);
+                adapter.getFilter().filter("1");
+            }
+        });
+        findViewById(R.id.allButton).setOnClickListener(v -> {
+            if(isFavorite) {
+                isFavorite = false;
+                findViewById(R.id.favoriteButton).setBackgroundResource(R.drawable.round_corner_black);
+                findViewById(R.id.allButton).setBackgroundResource(R.drawable.round_corner_blue);
+                adapter.getFilter().filter("0");
+            }
         });
     }
 
@@ -66,5 +83,6 @@ public class AlarmListActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         setRecyclerView();
+        adapter.getFilter().filter(isFavorite ? "1" : "0");
     }
 }

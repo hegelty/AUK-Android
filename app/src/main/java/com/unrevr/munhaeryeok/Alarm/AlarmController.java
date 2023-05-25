@@ -69,9 +69,9 @@ public class AlarmController {
         return id;
     }
 
-    void setAlarmAgain(int id) {
+    int setAlarmAgain(int id) {
         Alarm alarm = getAlarm(id);
-        setAlarm(alarm.d, alarm.h, alarm.m, alarm.s, id, alarm.sound, alarm.vibration, alarm.name, alarm.problem_type, alarm.favorite);
+        return setAlarm(alarm.d, alarm.h, alarm.m, alarm.s, id, alarm.sound, alarm.vibration, alarm.name, alarm.problem_type, alarm.favorite);
     }
 
     int createID() {
@@ -100,6 +100,8 @@ public class AlarmController {
             if(s!=null) new_list += s + "=";
         }
         dataCon.putString("alarm_list", new_list);
+
+        Log.d("deleteAlarm", "deleteAlarm: " + alarm.toString());
 
         Intent intent = new Intent(context, AlarmReciver.class);
         intent.putExtra("alarm", id);
@@ -134,6 +136,33 @@ public class AlarmController {
             }
         }
         return null;
+    }
+
+    public int getNearestAlarmId() {
+        String original = dataCon.getString("alarm_list", "").trim();
+        if(original.equals("")) return 0;
+        Log.d("getNearestAlarm", "getNearestAlarm: " + original);
+        String[] list = original.split("=");
+        String nearest = "";
+        Calendar nearestCal = Calendar.getInstance();
+        for(String s : list) {
+            s= s.trim();
+            String[] time = s.split("-")[1].split(":");
+            int d = Integer.parseInt(time[0]);
+            int h = Integer.parseInt(time[1]);
+            int m = Integer.parseInt(time[2]);
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.DAY_OF_WEEK, d);
+            calendar.set(Calendar.HOUR_OF_DAY, h);
+            calendar.set(Calendar.MINUTE, m);
+            calendar.set(Calendar.SECOND, 0);
+            if(calendar.compareTo(nearestCal) < 0) {
+                nearest = s;
+                nearestCal = calendar;
+            }
+        }
+        Log.d("getNearestAlarm", "getNearestAlarm: " + nearest);
+        return Integer.parseInt(nearest.split("-")[0]);
     }
 }
 

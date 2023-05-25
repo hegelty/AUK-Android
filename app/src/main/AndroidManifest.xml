@@ -55,6 +55,14 @@
         <service android:name=".Alarm.AlarmService" />
 
         <receiver android:name=".Alarm.AlarmReciver" />
+        <receiver
+            android:name=".Alarm.RestartAlarmReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>
