@@ -10,7 +10,7 @@ android {
         applicationId "com.unrevr.auk"
         minSdk 28
         targetSdk 33
-        versionCode 15
+        versionCode 16
         versionName "@string/app_version"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -39,6 +39,7 @@ dependencies {
     implementation "com.github.skydoves:expandablelayout:1.0.7"
     implementation "com.google.android.play:app-update:2.1.0"
     implementation "org.jsoup:jsoup:1.14.3"
+    implementation 'io.github.ParkSangGwon:tedpermission-normal:3.3.0'
     implementation "io.reactivex.rxjava3:rxjava:3.1.2"
     implementation "io.reactivex.rxjava3:rxandroid:3.0.0"
 }

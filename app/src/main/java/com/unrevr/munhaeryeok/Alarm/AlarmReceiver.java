@@ -3,9 +3,8 @@ package com.unrevr.munhaeryeok.Alarm;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
-public class AlarmReciver extends BroadcastReceiver {
+public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         int id = intent.getIntExtra("id", 0);

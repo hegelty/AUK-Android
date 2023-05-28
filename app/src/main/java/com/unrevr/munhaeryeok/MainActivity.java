@@ -3,7 +3,10 @@ package com.unrevr.munhaeryeok;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,7 +14,9 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -27,11 +32,14 @@ import com.google.android.play.core.appupdate.AppUpdateManager;
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
 import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.install.model.UpdateAvailability;
+import com.gun0912.tedpermission.PermissionListener;
+import com.gun0912.tedpermission.normal.TedPermission;
 import com.unrevr.munhaeryeok.Alarm.AlarmController;
 import com.unrevr.munhaeryeok.Alarm.AlarmData;
 import com.unrevr.munhaeryeok.Alarm.AlarmListActivity;
 import com.unrevr.munhaeryeok.Alarm.WrongAlarmsListActivity;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -51,9 +59,16 @@ public class MainActivity extends AppCompatActivity {
 
         checkFirstRun();
         getOverlayPermission();
+        addIgnoreBatteryOptimizationList();
+        requestAllowNotification();
         updateAppIfAvailable();
+        reloadAlarms();
         setProgressBar();
         setNearestAlarm();
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        NotificationChannel notificationChannel = new NotificationChannel("alarm", "alarm", NotificationManager.IMPORTANCE_DEFAULT);
+        notificationManager.createNotificationChannel(notificationChannel);
 
         findViewById(R.id.upcommingAlarm).setOnClickListener(v -> {
             Intent intent = new Intent(getApplicationContext(), AlarmListActivity.class);
@@ -114,17 +129,49 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void getOverlayPermission() {
-        if (Settings.canDrawOverlays(this)) {
-            return;
-        } else {
+        if (!Settings.canDrawOverlays(this)) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("권한이 필요합니다.").setMessage("다른 앱 위에 그리기 권한이 필요합니다. 설정 화면으로 이동하시겠습니까?");
+            builder.setTitle("권한이 필요합니다.").setMessage("\"다른 앱 위에 그리기\" 권한이 필요합니다.");
             builder.setPositiveButton("예", (dialog, id) -> {
                         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
                         startActivity(intent);
                     }
             ).setNegativeButton("아니오", (dialog, id) -> finish()).setCancelable(false);
             builder.create().show();
+        }
+    }
+
+    void addIgnoreBatteryOptimizationList() {
+        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        if(!powerManager.isIgnoringBatteryOptimizations(getPackageName())) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("권한이 필요합니다.").setMessage("알람 서비스 제공을 위해 이 어플을 \"배터리 사용량 최적화\" 목록에서 제외해야 합니다.");
+            builder.setPositiveButton("예", (dialog, id) -> {
+                        Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + getPackageName()));
+                        startActivity(intent);
+                    }
+            ).setNegativeButton("아니오", (dialog, id) -> finish()).setCancelable(false);
+            builder.create().show();
+        }
+    }
+
+    void requestAllowNotification() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            TedPermission.create()
+                    .setPermissionListener(new PermissionListener() {
+                        @Override
+                        public void onPermissionGranted() {
+                            // do nothing
+                        }
+
+                        @Override
+                        public void onPermissionDenied(List<String> deniedPermissions) {
+                            // do nothing
+                        }
+                    })
+                    .setDeniedMessage("만약 권한을 허용하지 않는다면, 재부팅 시 자동으로 알람이 설정되지 않을 수 있습니다. [설정] > [알림]에서 알람 권한을 허용해주세요.")
+                    .setPermissions(Manifest.permission.POST_NOTIFICATIONS)
+                    .check();
         }
     }
 
@@ -164,6 +211,7 @@ public class MainActivity extends AppCompatActivity {
     void setNearestAlarm() {
         AlarmController alarmController = new AlarmController(getApplicationContext());
         int nearestAlarmId = alarmController.getNearestAlarmId();
+        Log.d("MainActivity", "nearestAlarmId: " + nearestAlarmId);
         if(nearestAlarmId == 0) {
             TextView nameTextView = findViewById(R.id.nameTextView);
             nameTextView.setText("울릴 알람이 없습니다.");
@@ -302,9 +350,29 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    void reloadAlarms() {
+        DataController dataCon = new DataController(getApplicationContext(),"alarm_data");
+        String alarms_list = dataCon.getString("alarms_list", "").trim();
+        String[] list = alarms_list.split("=");
+
+        for(String s: list) {
+            if(s!=null&&s!="") {
+                AlarmData alarmData = new AlarmData(s);
+                Log.d("MainActivity", "reload: " + alarmData.toString());
+                for(int id: alarmData.alarm_ids) {
+                    if(id!=0) {
+                        AlarmController alarmController = new AlarmController(getApplicationContext());
+                        alarmController.reloadAlarms(id);
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public void onResume() {
         super.onResume();
+        Log.d("MainActivity", "onResume");
         setProgressBar();
         setNearestAlarm();
     }

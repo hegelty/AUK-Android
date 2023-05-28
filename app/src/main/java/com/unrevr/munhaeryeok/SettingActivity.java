@@ -29,5 +29,10 @@ public class SettingActivity extends AppCompatActivity {
             TextView textView = findViewById(R.id.textView);
             textView.setText(R.string.opensource_licence);
         });
+
+        findViewById(R.id.policyButton).setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://auk.hegelty.space/policy/index.html"));
+            startActivity(intent);
+        });
     }
 }

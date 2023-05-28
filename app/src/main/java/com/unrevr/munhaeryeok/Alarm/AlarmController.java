@@ -1,7 +1,6 @@
 package com.unrevr.munhaeryeok.Alarm;
 
 import static android.content.Context.ALARM_SERVICE;
-import static android.content.Context.MODE_PRIVATE;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -33,14 +32,13 @@ public class AlarmController {
 
         if(id==0) {
             id = createID();
-            if(calendar.compareTo(Calendar.getInstance()) < 0) calendar.add(Calendar.DATE, 7);
         }
         else { // 알람 재설정
-            calendar.add(Calendar.DATE, 7);
             deleteAlarm(id);
         }
+        if(calendar.compareTo(Calendar.getInstance()) < 0) calendar.add(Calendar.DATE, 7);
 
-        Intent intent = new Intent(context, AlarmReciver.class);
+        Intent intent = new Intent(context, AlarmReceiver.class);
         intent.putExtra("alarm", id);
         intent.putExtra("h", h);
         intent.putExtra("m", m);
@@ -74,10 +72,27 @@ public class AlarmController {
         return setAlarm(alarm.d, alarm.h, alarm.m, alarm.s, id, alarm.sound, alarm.vibration, alarm.name, alarm.problem_type, alarm.favorite);
     }
 
+    public int reloadAlarms(int id) {
+        Alarm alarm = getAlarm(id);
+        Intent intent = new Intent(context, AlarmReceiver.class);
+
+        PendingIntent pendingIntent = // 등록했을 때의 인텐트랑 같아야 삭제됨
+                PendingIntent.getBroadcast(
+                        context,
+                        id,
+                        intent,
+                        PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
+        if (pendingIntent == null) {
+            Log.d("reloadAlarms", "reloadAlarms: " + id);
+            return setAlarm(alarm.d, alarm.h, alarm.m, alarm.s, id, alarm.sound, alarm.vibration, alarm.name, alarm.problem_type, alarm.favorite);
+        }
+        else return id;
+    }
+
     int createID() {
         int id = dataCon.getInt("last_id", 0);
         dataCon.putInt("last_id", id + 1);
-        return id + 1;
+        return Integer.parseInt((id + 1) + Long.toString(System.currentTimeMillis()).substring(8));
     }
 
     void saveAlarm(Alarm alarm) {
@@ -103,14 +118,7 @@ public class AlarmController {
 
         Log.d("deleteAlarm", "deleteAlarm: " + alarm.toString());
 
-        Intent intent = new Intent(context, AlarmReciver.class);
-        intent.putExtra("alarm", id);
-        intent.putExtra("h", alarm.h);
-        intent.putExtra("m", alarm.m);
-        intent.putExtra("sound", alarm.sound);
-        intent.putExtra("vibration", alarm.vibration);
-        intent.putExtra("name", alarm.name);
-        intent.putExtra("problem_type", alarm.problem_type);
+        Intent intent = new Intent(context, AlarmReceiver.class);
 
         PendingIntent pendingIntent = // 등록했을 때의 인텐트랑 같아야 삭제됨
                 PendingIntent.getBroadcast(
@@ -118,7 +126,7 @@ public class AlarmController {
                         id,
                         intent,
                         PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
-
+        if(pendingIntent==null) return true;
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
         return true;
@@ -144,7 +152,7 @@ public class AlarmController {
         Log.d("getNearestAlarm", "getNearestAlarm: " + original);
         String[] list = original.split("=");
         String nearest = "";
-        Calendar nearestCal = Calendar.getInstance();
+        Calendar nearestCal = null;
         for(String s : list) {
             s= s.trim();
             String[] time = s.split("-")[1].split(":");
@@ -156,12 +164,14 @@ public class AlarmController {
             calendar.set(Calendar.HOUR_OF_DAY, h);
             calendar.set(Calendar.MINUTE, m);
             calendar.set(Calendar.SECOND, 0);
-            if(calendar.compareTo(nearestCal) < 0) {
+            if(calendar.compareTo(Calendar.getInstance()) < 0) calendar.add(Calendar.DATE, 7);
+            Log.d("getNearestAlarm", "getNearestAlarm: " + calendar.get(Calendar.DAY_OF_WEEK) + ", " + calendar.get(Calendar.HOUR_OF_DAY) + ", " + calendar.get(Calendar.MINUTE) + ", " + calendar.get(Calendar.SECOND));
+            if(nearestCal == null || calendar.compareTo(nearestCal) < 0) {
                 nearest = s;
                 nearestCal = calendar;
             }
         }
-        Log.d("getNearestAlarm", "getNearestAlarm: " + nearest);
+        Log.d("getNearestAlarm", "NearestAlarm: " + nearest);
         try {
             return Integer.parseInt(nearest.split("-")[0]);
         } catch (Exception e) {
