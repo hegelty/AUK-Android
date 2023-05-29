@@ -10,6 +10,8 @@ import android.graphics.Color;
 import android.media.AudioAttributes;
 import android.media.SoundPool;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.PowerManager;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
@@ -32,6 +34,7 @@ public class AlarmMCActivity extends AppCompatActivity {
 
     Vibrator vibrator;
     KeyguardManager keyguardManager;
+    Boolean onCoolDown = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +51,12 @@ public class AlarmMCActivity extends AppCompatActivity {
         keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
         keyguardManager.requestDismissKeyguard(this, null);
 
+        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK |
+                PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                PowerManager.ON_AFTER_RELEASE, "app:munhaeryeok");
+        wakeLock.acquire(3000);
+
         solved = false;
 
         id = intent.getIntExtra("id", 0);
@@ -63,6 +72,8 @@ public class AlarmMCActivity extends AppCompatActivity {
         Log.d("AlarmSFActivity", "onCreate: id: " + id + ", h: " + h + ", m: " + m + ", sound: " + sound + ", vibration: " + vibration);
         cnt = 0;
 
+        initLayout();
+
         if (sound) playSound();
         // vibrate until destroyed
         if (vibration) {
@@ -70,9 +81,6 @@ public class AlarmMCActivity extends AppCompatActivity {
             long[] pattern = {0, 1000, 500};
             vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0));
         }
-
-
-        initLayout();
     }
 
     void initLayout() {
@@ -115,6 +123,7 @@ public class AlarmMCActivity extends AppCompatActivity {
             answerTextView[i].setText(problem.mcAnswers[i]);
             int I = i;
             answerLayout[i].setOnClickListener(v -> {
+                if (onCoolDown) return;
                 if (problem.checkAnswer(I)) {
                     answerLayout[I].setBackgroundResource(R.drawable.round_corner_blue);
                     OXTextView[I].setText("O");
@@ -145,6 +154,7 @@ public class AlarmMCActivity extends AppCompatActivity {
                         OXTextView[I].setText("X");
                         answerTextView[I].setTextColor(Color.WHITE);
                         hintTextView.setText(problem.hint);
+                        coolDown();
                     }
                 }
             });
@@ -223,7 +233,7 @@ public class AlarmMCActivity extends AppCompatActivity {
             Log.d("playSound", "playSound");
             closePlayer();
             soundPool = new SoundPool.Builder().setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build()).build();
-            soundPool.load(getApplicationContext(), R.raw.alarm_sound, 1);
+            soundPool.load(getApplicationContext(), R.raw.alarm_sound, 0);
             soundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> {
                 streamIDs.add(soundPool.play(sampleId, 1, 1, 0, -1, 1));
                 Log.d("playSound", streamIDs.toString() + "");
@@ -248,5 +258,23 @@ public class AlarmMCActivity extends AppCompatActivity {
             soundPool.release();
             soundPool = null;
         }
+    }
+
+    void coolDown() {
+        TextView coolDownTextView = findViewById(R.id.coolDownTextView);
+        coolDownTextView.setVisibility(TextView.VISIBLE);
+        onCoolDown = true;
+        new CountDownTimer(5000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                coolDownTextView.setText((millisUntilFinished / 1000) + "초 후 다시 답을 골라주세요.");
+            }
+
+            @Override
+            public void onFinish() {
+                coolDownTextView.setVisibility(TextView.GONE);
+                onCoolDown = false;
+            }
+        }.start();
     }
 }

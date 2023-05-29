@@ -82,11 +82,12 @@ public class AlarmController {
                         id,
                         intent,
                         PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
-        if (pendingIntent == null) {
-            Log.d("reloadAlarms", "reloadAlarms: " + id);
-            return setAlarm(alarm.d, alarm.h, alarm.m, alarm.s, id, alarm.sound, alarm.vibration, alarm.name, alarm.problem_type, alarm.favorite);
+        if (pendingIntent != null) {
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
+            alarmManager.cancel(pendingIntent);
         }
-        else return id;
+        Log.d("reloadAlarms", "reloadAlarms: " + id);
+        return setAlarm(alarm.d, alarm.h, alarm.m, alarm.s, id, alarm.sound, alarm.vibration, alarm.name, alarm.problem_type, alarm.favorite);
     }
 
     int createID() {

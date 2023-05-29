@@ -7,6 +7,8 @@ import android.graphics.Color;
 import android.media.AudioAttributes;
 import android.media.SoundPool;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.PowerManager;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
@@ -34,6 +36,8 @@ public class AlarmSFActivity extends AppCompatActivity {
     boolean solved;
     Vibrator vibrator;
     KeyguardManager keyguardManager;
+    Boolean onCoolDown = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +54,11 @@ public class AlarmSFActivity extends AppCompatActivity {
         keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
         keyguardManager.requestDismissKeyguard(this, null);
 
+        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK |
+                PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                PowerManager.ON_AFTER_RELEASE, "app:munhaeryeok");
+        wakeLock.acquire(3000);
 
         solved = false;
 
@@ -102,6 +111,7 @@ public class AlarmSFActivity extends AppCompatActivity {
         questionTextView.setText(problem.question);
 
         submitButton.setOnClickListener(v -> {
+            if(onCoolDown) return;
             if (problem.checkAnswer(answerEditText.getText().toString())) {
                 hintTextView.setText(problem.solution);
                 answerEditText.setBackgroundResource(R.drawable.round_corner_blue);
@@ -244,5 +254,23 @@ public class AlarmSFActivity extends AppCompatActivity {
             soundPool.release();
             soundPool = null;
         }
+    }
+
+    void coolDown() {
+        TextView coolDownTextView = findViewById(R.id.coolDownTextView);
+        coolDownTextView.setVisibility(TextView.VISIBLE);
+        onCoolDown = true;
+        new CountDownTimer(5000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                coolDownTextView.setText((millisUntilFinished / 1000) + "초 후 다시 답을 골라주세요.");
+            }
+
+            @Override
+            public void onFinish() {
+                coolDownTextView.setVisibility(TextView.GONE);
+                onCoolDown = false;
+            }
+        }.start();
     }
 }

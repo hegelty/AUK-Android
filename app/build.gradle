@@ -10,7 +10,7 @@ android {
         applicationId "com.unrevr.auk"
         minSdk 28
         targetSdk 33
-        versionCode 16
+        versionCode 17
         versionName "@string/app_version"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
