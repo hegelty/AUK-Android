@@ -184,13 +184,6 @@
             android:textSize="18sp"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"/>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="휴대폰 재시작시 앱을 다시 실행해주세요."
-            android:textColor="@color/tblack"
-            android:layout_gravity="center"
-        />
 
         <TextView
             android:layout_width="wrap_content"

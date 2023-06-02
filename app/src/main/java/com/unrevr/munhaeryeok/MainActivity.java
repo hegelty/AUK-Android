@@ -37,7 +37,7 @@ import com.gun0912.tedpermission.normal.TedPermission;
 import com.unrevr.munhaeryeok.Alarm.AlarmController;
 import com.unrevr.munhaeryeok.Alarm.AlarmData;
 import com.unrevr.munhaeryeok.Alarm.AlarmListActivity;
-import com.unrevr.munhaeryeok.Alarm.WrongAlarmsListActivity;
+import com.unrevr.munhaeryeok.Alarm.WrongProblemsListActivity;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.progressBar).setOnClickListener(v -> {
-            Intent intent = new Intent(getApplicationContext(), WrongAlarmsListActivity.class);
+            Intent intent = new Intent(getApplicationContext(), WrongProblemsListActivity.class);
             startActivity(intent);
         });
 

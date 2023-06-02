@@ -31,7 +31,7 @@
         tools:targetApi="31">
 
         <activity
-            android:name=".Alarm.WrongAlarmsListActivity"
+            android:name=".Alarm.WrongProblemsListActivity"
             android:exported="false" />
         <activity
             android:name=".Alarm.AlarmActivity"
@@ -43,6 +43,7 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -50,11 +51,19 @@
         <activity android:name=".Alarm.AlarmListActivity" />
         <activity android:name=".SettingActivity" />
 
-
-
         <receiver
             android:name=".Alarm.Receiver"
-            android:enabled="true" />
+            android:enabled="true"
+            android:exported="true" />
+
+        <receiver
+            android:name=".RebootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
         <service
             android:name=".Alarm.SoundService"

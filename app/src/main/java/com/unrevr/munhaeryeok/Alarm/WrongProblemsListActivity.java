@@ -6,7 +6,7 @@ import android.os.Bundle;
 
 import com.unrevr.munhaeryeok.R;
 
-public class WrongAlarmsListActivity extends AppCompatActivity {
+public class WrongProblemsListActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
