@@ -4,8 +4,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import java.util.Calendar;
-
 public class AlarmService extends Service {
     public AlarmService() {}
 
@@ -29,15 +27,11 @@ public class AlarmService extends Service {
     }
 
     private void showAlarm(int id, int h, int m, boolean sound, boolean vibration, String name, int problem_type) {
-        Intent intent;
+        Intent intent = new Intent(this, AlarmActivity.class);
         // 1: 객관, 2: 주관, 3: 전부
-        if (problem_type == 1) intent = new Intent(this, AlarmMCActivity.class);
-        else if(problem_type == 2) intent = new Intent(this, AlarmSFActivity.class);
-        else {
-            if ((int) (Math.random() * 2) == 0) intent = new Intent(this, AlarmMCActivity.class);
-            else intent = new Intent(this, AlarmSFActivity.class);
-        }
-
+        if (problem_type == 1) intent.putExtra("problem_type", 1);
+        else if(problem_type == 2) intent.putExtra("problem_type", 2);
+        else intent.putExtra("problem_type", (int) (Math.random() * 2) + 1);
         intent.putExtra("id", id);
         intent.putExtra("h", h);
         intent.putExtra("m", m);

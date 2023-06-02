@@ -38,7 +38,7 @@ public class AlarmController {
         }
         if(calendar.compareTo(Calendar.getInstance()) < 0) calendar.add(Calendar.DATE, 7);
 
-        Intent intent = new Intent(context, AlarmReceiver.class);
+        Intent intent = new Intent(context, Receiver.class);
         intent.putExtra("alarm", id);
         intent.putExtra("h", h);
         intent.putExtra("m", m);
@@ -74,7 +74,7 @@ public class AlarmController {
 
     public int reloadAlarms(int id) {
         Alarm alarm = getAlarm(id);
-        Intent intent = new Intent(context, AlarmReceiver.class);
+        Intent intent = new Intent(context, Receiver.class);
 
         PendingIntent pendingIntent = // 등록했을 때의 인텐트랑 같아야 삭제됨
                 PendingIntent.getBroadcast(
@@ -119,7 +119,7 @@ public class AlarmController {
 
         Log.d("deleteAlarm", "deleteAlarm: " + alarm.toString());
 
-        Intent intent = new Intent(context, AlarmReceiver.class);
+        Intent intent = new Intent(context, Receiver.class);
 
         PendingIntent pendingIntent = // 등록했을 때의 인텐트랑 같아야 삭제됨
                 PendingIntent.getBroadcast(

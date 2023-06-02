@@ -15,6 +15,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
 
     <application
         android:allowBackup="true"
@@ -31,22 +32,17 @@
         <service
             android:name=".Alarm.SoundService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
         <service
             android:name=".Alarm.AlarmSoundService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
         <activity
             android:name=".Alarm.WrongAlarmsListActivity"
             android:exported="false" />
         <activity
-            android:name=".Alarm.AlarmMCActivity"
-            android:excludeFromRecents="true"
-            android:exported="true"
-            android:showOnLockScreen="true" />
-        <activity
-            android:name=".Alarm.AlarmSFActivity"
+            android:name=".Alarm.AlarmActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:showOnLockScreen="true" />
@@ -55,7 +51,6 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -65,7 +60,11 @@
 
         <service android:name=".Alarm.AlarmService" />
 
-        <receiver android:name=".Alarm.AlarmReceiver" />
+        <receiver
+            android:name=".Alarm.Receiver"
+            android:enabled="true"
+            android:exported="true" />
+
         <receiver
             android:name=".Alarm.RestartAlarmReceiver"
             android:enabled="true"

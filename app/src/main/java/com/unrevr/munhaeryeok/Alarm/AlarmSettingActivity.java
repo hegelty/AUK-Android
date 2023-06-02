@@ -21,14 +21,32 @@ import com.skydoves.expandablelayout.ExpandableLayout;
 import com.unrevr.munhaeryeok.DataController;
 import com.unrevr.munhaeryeok.R;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 public class AlarmSettingActivity extends AppCompatActivity {
     int id;
     DataController dataCon;
+
+    ExpandableLayout dayExpandableLayout, soundExpandableLayout, problemExpandableLayout;
+    CheckBox soundCheckBox, vibrationCheckBox, mcCheckBox, sfCheckBox, favoriteCheckBox;
+    TextView soundTextView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.alarm_setting_layout);
         dataCon = new DataController(getApplicationContext(), "alarm_data");
+
+        dayExpandableLayout = findViewById(R.id.dayExpandableLayout);
+        soundExpandableLayout = findViewById(R.id.soundExpandableLayout);
+        problemExpandableLayout = findViewById(R.id.problemExpandableLayout);
+        soundCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.soundCheckBox);
+        vibrationCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.vibrationCheckBox);
+        soundTextView = soundExpandableLayout.parentLayout.findViewById(R.id.soundSetTextView);
+        mcCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.mcCheckBox);
+        sfCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.sfCheckBox);
+        favoriteCheckBox = findViewById(R.id.favoriteCheckBox);
 
         this.id = getIntent().getIntExtra("id", 0);
         if(id!=0) {
@@ -70,7 +88,6 @@ public class AlarmSettingActivity extends AppCompatActivity {
                         .setPositiveButton("확인", (dialog, which) -> {
                         }).show();
             }
-            ExpandableLayout dayExpandableLayout = findViewById(R.id.dayExpandableLayout);
             TextView dayTextView = dayExpandableLayout.parentLayout.findViewById(R.id.daySetTextView);
             String day = dayTextView.getText().toString();
             if(day.trim().length()==0) {
@@ -82,7 +99,6 @@ public class AlarmSettingActivity extends AppCompatActivity {
                 return;
             }
 
-            ExpandableLayout soundExpandableLayout = findViewById(R.id.soundExpandableLayout);
             TextView soundTextView = soundExpandableLayout.parentLayout.findViewById(R.id.soundSetTextView);
             String sound = soundTextView.getText().toString();
             if(sound.trim().length()==0) {
@@ -94,7 +110,6 @@ public class AlarmSettingActivity extends AppCompatActivity {
                 return;
             }
 
-            ExpandableLayout problemExpandableLayout = findViewById(R.id.problemExpandableLayout);
             TextView problemTextView = problemExpandableLayout.parentLayout.findViewById(R.id.problemSetTextView);
             String problem = problemTextView.getText().toString();
             if(problem.trim().length()==0) {
@@ -153,21 +168,10 @@ public class AlarmSettingActivity extends AppCompatActivity {
 
     // ExpandableLayout
     void setExpandableLayout() {
-        ExpandableLayout dayExpandableLayout = findViewById(R.id.dayExpandableLayout);
-        ExpandableLayout soundExpandableLayout = findViewById(R.id.soundExpandableLayout);
-        ExpandableLayout problemExpandableLayout = findViewById(R.id.problemExpandableLayout);
-
         // 선택창 열고닫기
         dayExpandableLayout.setOnClickListener(v -> {
             if(dayExpandableLayout.isExpanded()) {
-                CheckBox[] dayCheckBox = new CheckBox[7];
-                dayCheckBox[1] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxMonday));
-                dayCheckBox[2] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxTuesday));
-                dayCheckBox[3] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxWednesday));
-                dayCheckBox[4] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxThursday));
-                dayCheckBox[5] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxFriday));
-                dayCheckBox[6] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSaturday));
-                dayCheckBox[0] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSunday));
+                CheckBox[] dayCheckBox = getCheckBoxes();
 
                 String days = "";
                 String[] dayString = {"일", "월", "화", "수", "목", "금", "토"};
@@ -200,9 +204,6 @@ public class AlarmSettingActivity extends AppCompatActivity {
         soundExpandableLayout.setOnClickListener(v -> {
             if(soundExpandableLayout.isExpanded()) {
                 soundExpandableLayout.toggleLayout();
-                CheckBox soundCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.soundCheckBox);
-                CheckBox vibrationCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.vibrationCheckBox);
-                TextView soundTextView = soundExpandableLayout.parentLayout.findViewById(R.id.soundSetTextView);
 
                 if(soundCheckBox.isChecked()) {
                     if(vibrationCheckBox.isChecked()) {
@@ -228,8 +229,6 @@ public class AlarmSettingActivity extends AppCompatActivity {
 
         problemExpandableLayout.setOnClickListener(v -> {
             if(problemExpandableLayout.isExpanded()) {
-                CheckBox mcCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.mcCheckBox);
-                CheckBox sfCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.sfCheckBox);
                 TextView problemTextView = problemExpandableLayout.parentLayout.findViewById(R.id.problemSetTextView);
 
                 if (mcCheckBox.isChecked()) {
@@ -255,22 +254,14 @@ public class AlarmSettingActivity extends AppCompatActivity {
         });
 
         // 체크박스
-        CheckBox[] checkBoxes = new CheckBox[11];
-        checkBoxes[1] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxMonday));
-        checkBoxes[2] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxTuesday));
-        checkBoxes[3] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxWednesday));
-        checkBoxes[4] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxThursday));
-        checkBoxes[5] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxFriday));
-        checkBoxes[6] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSaturday));
-        checkBoxes[0] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSunday));
-        checkBoxes[7] = soundExpandableLayout.secondLayout.findViewById(R.id.soundCheckBox);
-        checkBoxes[8] = soundExpandableLayout.secondLayout.findViewById(R.id.vibrationCheckBox);
-        checkBoxes[9] = problemExpandableLayout.secondLayout.findViewById(R.id.mcCheckBox);
-        checkBoxes[10] = problemExpandableLayout.secondLayout.findViewById(R.id.sfCheckBox);
-        for(CheckBox c: checkBoxes) {
-            c.setOnClickListener(v -> {
-                updateSelects();
-            });
+        CheckBox[] checkBoxes = getCheckBoxes();
+        ArrayList<CheckBox> checkBoxesArrayList = new ArrayList<>();
+        Collections.addAll(checkBoxesArrayList, checkBoxes);
+        checkBoxesArrayList.add(soundExpandableLayout.secondLayout.findViewById(R.id.vibrationCheckBox));
+        checkBoxesArrayList.add(problemExpandableLayout.secondLayout.findViewById(R.id.mcCheckBox));
+        checkBoxesArrayList.add(problemExpandableLayout.secondLayout.findViewById(R.id.sfCheckBox));
+        for(CheckBox c: checkBoxesArrayList) {
+            c.setOnClickListener(v -> updateSelects());
         }
     }
 
@@ -285,28 +276,11 @@ public class AlarmSettingActivity extends AppCompatActivity {
             if(id==0) id = createID();
             else deleteAlarm(id);
 
-            ExpandableLayout dayExpandableLayout = findViewById(R.id.dayExpandableLayout);
-            ExpandableLayout soundExpandableLayout = findViewById(R.id.soundExpandableLayout);
-            ExpandableLayout problemExpandableLayout = findViewById(R.id.problemExpandableLayout);
-            
             TimePicker timePicker = findViewById(R.id.timePicker);
             int h = timePicker.getHour();
             int m = timePicker.getMinute();
 
-            CheckBox[] dayCheckBox = new CheckBox[7];
-            dayCheckBox[1] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxMonday));
-            dayCheckBox[2] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxTuesday));
-            dayCheckBox[3] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxWednesday));
-            dayCheckBox[4] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxThursday));
-            dayCheckBox[5] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxFriday));
-            dayCheckBox[6] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSaturday));
-            dayCheckBox[0] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSunday));
-
-            CheckBox soundCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.soundCheckBox);
-            CheckBox vibrationCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.vibrationCheckBox);
-            
-            CheckBox mcCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.mcCheckBox); // 객관
-            CheckBox sfCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.sfCheckBox); // 주관
+            CheckBox[] dayCheckBox = getCheckBoxes();
             
             int problem_type = 0; // 1: 객관, 2: 주관, 3: 전부
             if(mcCheckBox.isChecked()) problem_type += 1;
@@ -315,7 +289,6 @@ public class AlarmSettingActivity extends AppCompatActivity {
             EditText nameEditText = findViewById(R.id.nameEditText);
             String name = nameEditText.getText().toString();
 
-            CheckBox favoriteCheckBox = findViewById(R.id.favoriteCheckBox);
             boolean favorite = favoriteCheckBox.isChecked();
 
             AlarmController alarmController = new AlarmController(getApplicationContext());
@@ -352,7 +325,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
                         Log.d("deleteAlarm", "delete " + s);
                         continue;
                     }
-                    if(s!=null) new_list += s + "=";
+                    new_list += s + "=";
                 }
                 dataCon.putString("alarms_list", new_list);
 
@@ -389,25 +362,13 @@ public class AlarmSettingActivity extends AppCompatActivity {
     }
 
     void loadAlarm(int id) {
-        AlarmController alarmController = new AlarmController(getApplicationContext());
         AlarmData alarmData = getAlarmData(id);
-
-        ExpandableLayout dayExpandableLayout = findViewById(R.id.dayExpandableLayout);
-        ExpandableLayout soundExpandableLayout = findViewById(R.id.soundExpandableLayout);
-        ExpandableLayout problemExpandableLayout = findViewById(R.id.problemExpandableLayout);
 
         TimePicker timePicker = findViewById(R.id.timePicker);
         timePicker.setHour(alarmData.h);
         timePicker.setMinute(alarmData.m);
 
-        CheckBox[] dayCheckBox = new CheckBox[7];
-        dayCheckBox[1] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxMonday));
-        dayCheckBox[2] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxTuesday));
-        dayCheckBox[3] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxWednesday));
-        dayCheckBox[4] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxThursday));
-        dayCheckBox[5] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxFriday));
-        dayCheckBox[6] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSaturday));
-        dayCheckBox[0] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSunday));
+        CheckBox[] dayCheckBox = getCheckBoxes();
 
         for (int i=0;i<7;i++) {
             if(alarmData.alarm_ids[i]!=0) {
@@ -415,14 +376,8 @@ public class AlarmSettingActivity extends AppCompatActivity {
             }
         }
 
-        CheckBox soundCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.soundCheckBox);
-        CheckBox vibrationCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.vibrationCheckBox);
-
         soundCheckBox.setChecked(alarmData.sound);
         vibrationCheckBox.setChecked(alarmData.vibration);
-
-        CheckBox mcCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.mcCheckBox); // 객관
-        CheckBox sfCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.sfCheckBox); // 주관
 
         if(alarmData.problem_type == 1) {
             mcCheckBox.setChecked(true);
@@ -443,17 +398,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
     }
 
     void updateSelects() {
-        // 요일
-        ExpandableLayout dayExpandableLayout = findViewById(R.id.dayExpandableLayout);
-
-        CheckBox[] dayCheckBox = new CheckBox[7];
-        dayCheckBox[1] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxMonday));
-        dayCheckBox[2] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxTuesday));
-        dayCheckBox[3] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxWednesday));
-        dayCheckBox[4] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxThursday));
-        dayCheckBox[5] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxFriday));
-        dayCheckBox[6] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSaturday));
-        dayCheckBox[0] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSunday));
+        CheckBox[] dayCheckBox = getCheckBoxes();
 
         String days = "";
         String[] dayString = {"일", "월", "화", "수", "목", "금", "토"};
@@ -474,12 +419,6 @@ public class AlarmSettingActivity extends AppCompatActivity {
         dayTextView.setText(days);
 
         // 소리, 진동
-        ExpandableLayout soundExpandableLayout = findViewById(R.id.soundExpandableLayout);
-
-        CheckBox soundCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.soundCheckBox);
-        CheckBox vibrationCheckBox = soundExpandableLayout.secondLayout.findViewById(R.id.vibrationCheckBox);
-        TextView soundTextView = soundExpandableLayout.parentLayout.findViewById(R.id.soundSetTextView);
-
         if(soundCheckBox.isChecked()) {
             if(vibrationCheckBox.isChecked()) {
                 soundTextView.setText("소리 + 진동");
@@ -498,10 +437,6 @@ public class AlarmSettingActivity extends AppCompatActivity {
         }
 
         // 문제
-        ExpandableLayout problemExpandableLayout = findViewById(R.id.problemExpandableLayout);
-
-        CheckBox mcCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.mcCheckBox);
-        CheckBox sfCheckBox = problemExpandableLayout.secondLayout.findViewById(R.id.sfCheckBox);
         TextView problemTextView = problemExpandableLayout.parentLayout.findViewById(R.id.problemSetTextView);
 
         if (mcCheckBox.isChecked()) {
@@ -536,7 +471,6 @@ public class AlarmSettingActivity extends AppCompatActivity {
                                 .setPositiveButton("확인", (dialog2, which2) -> {
                                 }).show();
                     }
-                    ExpandableLayout dayExpandableLayout = findViewById(R.id.dayExpandableLayout);
                     TextView dayTextView = dayExpandableLayout.parentLayout.findViewById(R.id.daySetTextView);
                     String day = dayTextView.getText().toString();
                     if(day.trim().length()==0) {
@@ -548,7 +482,6 @@ public class AlarmSettingActivity extends AppCompatActivity {
                         return;
                     }
 
-                    ExpandableLayout soundExpandableLayout = findViewById(R.id.soundExpandableLayout);
                     TextView soundTextView = soundExpandableLayout.parentLayout.findViewById(R.id.soundSetTextView);
                     String sound = soundTextView.getText().toString();
                     if(sound.trim().length()==0) {
@@ -560,7 +493,6 @@ public class AlarmSettingActivity extends AppCompatActivity {
                         return;
                     }
 
-                    ExpandableLayout problemExpandableLayout = findViewById(R.id.problemExpandableLayout);
                     TextView problemTextView = problemExpandableLayout.parentLayout.findViewById(R.id.problemSetTextView);
                     String problem = problemTextView.getText().toString();
                     if(problem.trim().length()==0) {
@@ -575,5 +507,18 @@ public class AlarmSettingActivity extends AppCompatActivity {
                     finish();
                 })
                 .show();
+    }
+
+    CheckBox[] getCheckBoxes() {
+        ExpandableLayout dayExpandableLayout = findViewById(R.id.dayExpandableLayout);
+        CheckBox[] dayCheckBox = new CheckBox[7];
+        dayCheckBox[1] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxMonday));
+        dayCheckBox[2] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxTuesday));
+        dayCheckBox[3] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxWednesday));
+        dayCheckBox[4] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxThursday));
+        dayCheckBox[5] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxFriday));
+        dayCheckBox[6] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSaturday));
+        dayCheckBox[0] = (dayExpandableLayout.secondLayout.findViewById(R.id.checkBoxSunday));
+        return dayCheckBox;
     }
 }

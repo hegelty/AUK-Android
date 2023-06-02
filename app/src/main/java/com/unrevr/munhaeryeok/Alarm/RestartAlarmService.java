@@ -14,17 +14,6 @@ public class RestartAlarmService extends Service {
     public RestartAlarmService() {}
 
     @Override
-    public void onCreate() {
-        super.onCreate();
-        Notification notification = new Notification.Builder(getApplicationContext(), "alarm")
-                .setContentTitle("AUK")
-                .setContentText("AUK 알람을 설정 중입니다.")
-                .setSmallIcon(android.R.drawable.ic_dialog_alert)
-                .build();
-        startForeground(1, notification);
-    }
-
-    @Override
     public IBinder onBind(Intent intent) {
             return null;
     }
@@ -32,6 +21,12 @@ public class RestartAlarmService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d("Reboot", "Reboot");
+        Notification notification = new Notification.Builder(getApplicationContext(), "alarm")
+                .setContentTitle("AUK")
+                .setContentText("AUK 알람을 설정 중입니다.")
+                .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                .build();
+        startForeground(1, notification);
 
         DataController dataCon = new DataController(getApplicationContext(),"alarm_data");
         String alarms_list = dataCon.getString("alarms_list", "").trim();
