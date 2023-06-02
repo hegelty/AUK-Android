@@ -29,14 +29,6 @@
         android:theme="@style/Theme.Munhaeryeok"
         android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
         tools:targetApi="31">
-        <service
-            android:name=".Alarm.SoundService"
-            android:enabled="true"
-            android:exported="true" />
-        <service
-            android:name=".Alarm.AlarmSoundService"
-            android:enabled="true"
-            android:exported="true" />
 
         <activity
             android:name=".Alarm.WrongAlarmsListActivity"
@@ -58,23 +50,29 @@
         <activity android:name=".Alarm.AlarmListActivity" />
         <activity android:name=".SettingActivity" />
 
-        <service android:name=".Alarm.AlarmService" />
+
 
         <receiver
             android:name=".Alarm.Receiver"
-            android:enabled="true"
-            android:exported="true" />
+            android:enabled="true" />
 
-        <receiver
-            android:name=".Alarm.RestartAlarmReceiver"
+        <service
+            android:name=".Alarm.SoundService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="alarm_killed" />
             </intent-filter>
-        </receiver>
-
-        <service android:name=".Alarm.RestartAlarmService" />
+        </service>
+        <service
+            android:name=".Alarm.AlarmSoundService"
+            android:enabled="true" />
+        <service
+            android:name=".Alarm.AlarmService"
+            android:enabled="true" />
+        <service
+            android:name=".Alarm.RestartAlarmService"
+            android:enabled="true" />
     </application>
 
 </manifest>

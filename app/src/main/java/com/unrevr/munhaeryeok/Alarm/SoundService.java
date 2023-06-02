@@ -3,10 +3,13 @@ package com.unrevr.munhaeryeok.Alarm;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -23,8 +26,16 @@ public class SoundService extends Service {
     SoundPool soundPool;
     ArrayList<Integer> streamIDs = new ArrayList<>();
     Vibrator vibrator;
-    public SoundService() {
-    }
+    boolean sound, vibration;
+
+    private BroadcastReceiver killReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(android.content.Context context, Intent intent) {
+            Log.d("killReceiver", "onReceive");
+            stop();
+            stopSelf();
+        }
+    };
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -33,41 +44,39 @@ public class SoundService extends Service {
 
     @Override
     public void onCreate() {
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
-        Notification notification = new NotificationCompat.Builder(this, "alarm")
-                .setContentTitle("AUK")
-                .setContentText("알람 울리는 중")
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentIntent(pendingIntent)
-                .build();
-
-        startForeground(1, notification);
-
-        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        long[] pattern = {0, 1000, 500};
-        vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0));
-
-        soundPool = new SoundPool.Builder().setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build()).build();
-        soundPool.load(getApplicationContext(), R.raw.alarm_sound, 0);
-
         super.onCreate();
+        registerReceiver(killReceiver, new IntentFilter("alarm_killed"));
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        soundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> {
-            streamIDs.add(soundPool.play(sampleId, 1, 1, 0, -1, 1));
-            Log.d("playSound", streamIDs.toString() + "");
-        });
+        Log.d("SoundService", "onStartCommand");
+
+        sound = intent.getBooleanExtra("sound", false);
+        vibration = intent.getBooleanExtra("vibration", false);
+
+        if(vibration) {
+            vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+            long[] pattern = {0, 1000, 500};
+            vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0));
+        }
+
+        if(sound) {
+            soundPool = new SoundPool.Builder().setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build()).build();
+            soundPool.load(getApplicationContext(), R.raw.alarm_sound, 0);
+
+            soundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> {
+                streamIDs.add(soundPool.play(sampleId, 1, 1, 0, -1, 1));
+                Log.d("playSound", streamIDs.toString() + "");
+            });
+        }
 
         // stopSelf();
         return super.onStartCommand(intent, flags, startId);
     }
 
-    @Override
-    public void onDestroy() {
-        vibrator.cancel();
+    public void stop() {
+        if(vibrator!=null) vibrator.cancel();
         if (soundPool != null) {
             for (int streamID : streamIDs) {
                 soundPool.stop(streamID);
@@ -75,6 +84,12 @@ public class SoundService extends Service {
             soundPool.release();
             soundPool = null;
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        stop();
+        unregisterReceiver(killReceiver);
         super.onDestroy();
     }
 }

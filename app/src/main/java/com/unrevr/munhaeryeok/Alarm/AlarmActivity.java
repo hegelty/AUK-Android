@@ -4,13 +4,9 @@ import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.media.AudioAttributes;
-import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.PowerManager;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,15 +23,11 @@ import com.unrevr.munhaeryeok.Problem;
 import com.unrevr.munhaeryeok.R;
 import com.unrevr.munhaeryeok.UserInfo;
 
-import java.util.ArrayList;
-
 public class AlarmActivity extends AppCompatActivity {
     int id, h, m, problem_type;
-    boolean sound, vibration;
     Problem problem;
     int cnt = 0;
     boolean solved;
-    Vibrator vibrator;
     KeyguardManager keyguardManager;
     Boolean onCoolDown = false;
 
@@ -65,8 +57,6 @@ public class AlarmActivity extends AppCompatActivity {
         id = intent.getIntExtra("id", 0);
         h = intent.getIntExtra("h", 0);
         m = intent.getIntExtra("m", 0);
-        sound = intent.getBooleanExtra("sound", false);
-        vibration = intent.getBooleanExtra("vibration", false);
         // 1: 객관, 2: 주관
         problem_type = intent.getIntExtra("problem_type", 1);
         int problem_id = intent.getIntExtra("id", 0);
@@ -82,17 +72,8 @@ public class AlarmActivity extends AppCompatActivity {
             setContentView(R.layout.alarm_layout_sf);
         }
 
-        Log.d("AlarmActivity", "onCreate: id: " + id + ", h: " + h + ", m: " + m + ", sound: " + sound + ", vibration: " + vibration + (problem_type == 1 ? "MC" : "SF"));
+        Log.d("AlarmActivity", "onCreate: id: " + id + ", h: " + h + ", m: " + m + (problem_type == 1 ? "MC" : "SF"));
         initLayout();
-
-        if (sound) playSound();
-        // vibrate until destroyed
-        if (vibration) {
-            vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-            long[] pattern = {0, 1000, 500};
-            vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0));
-        }
-
     }
 
     void initLayout() {
@@ -130,6 +111,7 @@ public class AlarmActivity extends AppCompatActivity {
                         answerEditText.setBackgroundResource(R.drawable.round_corner_red);
                         answerEditText.setTextColor(Color.WHITE);
                         answerEditText.setText("");
+                        coolDown();
                     }
                 }
             });
@@ -233,32 +215,27 @@ public class AlarmActivity extends AppCompatActivity {
     void addWrongProblem(Problem problem) {
         UserInfo.getInstance(getApplicationContext()).wrong(problem.id, problem_type);
         solved = true;
-        if(sound) stopSound();
-        if(vibration) vibrator.cancel();
+        stopSound();
     }
 
     void addCorrectProblem(Problem problem) {
         UserInfo.getInstance(getApplicationContext()).solve();
         solved = true;
-        if(sound) stopSound();
-        if(vibration) vibrator.cancel();
+        stopSound();
     }
 
     // 강제로 끌때 동작
     @Override
     public void onPause() {
-        if(sound) stopSound();
-        if(vibration) vibrator.cancel();
         if(!solved&&!keyguardManager.isKeyguardLocked()) {
             Intent intent = new Intent(this, AlarmActivity.class);
             intent.putExtra("id", id);
             intent.putExtra("h", h);
             intent.putExtra("m", m);
-            intent.putExtra("sound", sound);
-            intent.putExtra("vibration", vibration);
             intent.putExtra("problem_id", problem.id);
             intent.putExtra("problem_type", problem_type);
             startActivity(intent);
+            stopSound();
 
             // finish this activity
             finish();
@@ -268,18 +245,15 @@ public class AlarmActivity extends AppCompatActivity {
 
     @Override
     public void onDestroy() {
-        if(sound) stopSound();
-        if(vibration) vibrator.cancel();
         if(!solved) {
             Intent intent = new Intent(this, AlarmActivity.class);
             intent.putExtra("id", id);
             intent.putExtra("h", h);
             intent.putExtra("m", m);
-            intent.putExtra("sound", sound);
-            intent.putExtra("vibration", vibration);
             intent.putExtra("problem_id", problem.id);
             intent.putExtra("problem_type", problem_type);
             startActivity(intent);
+            stopSound();
 
             // finish this activity
             finish();
@@ -292,39 +266,9 @@ public class AlarmActivity extends AppCompatActivity {
         // do nothing
     }
 
-
-    SoundPool soundPool;
-    ArrayList<Integer> streamIDs = new ArrayList<>();
-    public void playSound() {
-        try {
-            Log.d("playSound", "playSound");
-            closePlayer();
-            soundPool = new SoundPool.Builder().setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build()).build();
-            soundPool.load(getApplicationContext(), R.raw.alarm_sound, 1);
-            soundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> {
-                streamIDs.add(soundPool.play(sampleId, 1, 1, 0, -1, 1));
-                Log.d("playSound", streamIDs.toString() + "");
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
     public void stopSound() {
-        try {
-            closePlayer();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void closePlayer(){
-        if (soundPool != null) {
-            for (int streamID : streamIDs) {
-                soundPool.stop(streamID);
-            }
-            soundPool.release();
-            soundPool = null;
-        }
+        Intent intent = new Intent("alarm_killed");
+        sendBroadcast(intent);
     }
 
     void coolDown() {
@@ -334,6 +278,7 @@ public class AlarmActivity extends AppCompatActivity {
         new CountDownTimer(5000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
+                Log.d("coolDown", millisUntilFinished + "");
                 coolDownTextView.setText((millisUntilFinished / 1000) + "초 후 다시 답을 골라주세요.");
             }
 

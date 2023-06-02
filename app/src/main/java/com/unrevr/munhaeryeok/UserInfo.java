@@ -53,7 +53,7 @@ public class UserInfo {
     public int solve() {
         dataController = new DataController(context,"user_info");
         solvedCount++;
-        accuracy = solvedCount / (solvedCount + wrongCount) * 100;
+        accuracy = solvedCount * 100 / (solvedCount + wrongCount);
         score =  accuracy / 2 + (Math.min(solvedCount, 200)) / 4;
         dataController.putInt("score", score);
         dataController.putInt("solved_count", solvedCount);
@@ -64,7 +64,7 @@ public class UserInfo {
     public int wrong(int id, int type) { // MC: 1, SF: 2
         dataController = new DataController(context,"user_info");
         wrongCount++;
-        accuracy = solvedCount / (solvedCount + wrongCount) * 100;
+        accuracy = solvedCount * 100 / (solvedCount + wrongCount);
         score =  accuracy / 2 + (Math.min(solvedCount, 200)) / 4;
         dataController.putInt("score", score);
         dataController.putInt("wrong_count", wrongCount);

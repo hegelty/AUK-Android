@@ -3,11 +3,15 @@ package com.unrevr.munhaeryeok.Alarm;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 
 public class Receiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        if(intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
+        if("android.intent.action.BOOT_COMPLETED".equals(intent.getAction())) {
+            SharedPreferences sharedPreferences = context.getSharedPreferences("tmp", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("test", true);
             Intent reload_intent = new Intent(context, RestartAlarmService.class);
             context.startForegroundService(reload_intent);
         }
