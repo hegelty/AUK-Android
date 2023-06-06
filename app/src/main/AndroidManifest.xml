@@ -37,7 +37,11 @@
             android:name=".Alarm.AlarmActivity"
             android:excludeFromRecents="true"
             android:exported="true"
-            android:showOnLockScreen="true" />
+            android:showOnLockScreen="true">
+            <intent-filter>
+                <action android:name="alarm_killed_main" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -52,7 +56,7 @@
         <activity android:name=".SettingActivity" />
 
         <receiver
-            android:name=".Alarm.Receiver"
+            android:name=".Alarm.AlarmReceiver"
             android:enabled="true"
             android:exported="true" />
 

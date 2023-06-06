@@ -22,6 +22,9 @@ public class AlarmController {
         this.dataCon  = new DataController(context, "alarm");
     }
 
+    public int setAlarm(Alarm alarm) {
+        return setAlarm(alarm.d, alarm.h, alarm.m, alarm.s, alarm.id, alarm.sound, alarm.vibration, alarm.name, alarm.problem_type, alarm.favorite);
+    }
     public int setAlarm(int d, int h, int m, int s, int id, boolean sound, boolean vibration, String name, int problem_type, boolean favorite) {
         // id = 0 이면 새로운 알람 생성
         Calendar calendar = Calendar.getInstance();
@@ -30,15 +33,10 @@ public class AlarmController {
         calendar.set(Calendar.MINUTE, m);
         calendar.set(Calendar.SECOND, s);
 
-        if(id==0) {
-            id = createID();
-        }
-        else { // 알람 재설정
-            deleteAlarm(id);
-        }
+        int alarm_id = createAlarmID();
         if(calendar.compareTo(Calendar.getInstance()) < 0) calendar.add(Calendar.DATE, 7);
 
-        Intent intent = new Intent(context, Receiver.class);
+        Intent intent = new Intent(context, AlarmReceiver.class);
         intent.putExtra("alarm", id);
         intent.putExtra("h", h);
         intent.putExtra("m", m);
@@ -50,7 +48,7 @@ public class AlarmController {
         PendingIntent pendingIntent =
                 PendingIntent.getBroadcast(
                         context,
-                        id,
+                        alarm_id,
                         intent,
                         PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
@@ -62,32 +60,30 @@ public class AlarmController {
         );
 
         Alarm alarm = new Alarm(id, d, h, m, s, sound, vibration, name, problem_type, favorite);
-        saveAlarm(alarm);
+        alarm.setAlarmId(alarm_id);
+        saveAlarmId(id, alarm_id);
 
         return id;
     }
 
-    int setAlarmAgain(int id) {
-        Alarm alarm = getAlarm(id);
-        return setAlarm(alarm.d, alarm.h, alarm.m, alarm.s, id, alarm.sound, alarm.vibration, alarm.name, alarm.problem_type, alarm.favorite);
-    }
-
-    public int reloadAlarms(int id) {
-        Alarm alarm = getAlarm(id);
-        Intent intent = new Intent(context, Receiver.class);
-
-        PendingIntent pendingIntent = // 등록했을 때의 인텐트랑 같아야 삭제됨
-                PendingIntent.getBroadcast(
-                        context,
-                        id,
-                        intent,
-                        PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
-        if (pendingIntent != null) {
-            AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
-            alarmManager.cancel(pendingIntent);
+    public void reloadAlarms() {
+        String original = dataCon.getString("alarm_list", "").trim();
+        String[] list = original.split("=");
+        String new_list = "";
+        for(String s : list) {
+            try {
+                if (Integer.parseInt(s.split("-")[1]) != 0) {
+                    cancelAlarm(Integer.parseInt(s.split("-")[1]));
+                    new_list += s.split("-")[0] + "-0-" + s.split("-")[2] + "=";
+                }
+                else new_list += s + "=";
+            } catch(Exception e) {
+                new_list += s + "=";
+            }
         }
-        Log.d("reloadAlarms", "reloadAlarms: " + id);
-        return setAlarm(alarm.d, alarm.h, alarm.m, alarm.s, id, alarm.sound, alarm.vibration, alarm.name, alarm.problem_type, alarm.favorite);
+
+        dataCon.putString("alarm_list", new_list);
+        setNearestAlarm();
     }
 
     int createID() {
@@ -96,10 +92,38 @@ public class AlarmController {
         return Integer.parseInt((id + 1) + Long.toString(System.currentTimeMillis()).substring(8));
     }
 
-    void saveAlarm(Alarm alarm) {
+    int createAlarmID() {
+        int id = dataCon.getInt("last_alarm_id", 0);
+        dataCon.putInt("last_alarm_id", id + 1);
+        return Integer.parseInt((id + 1) + Long.toString(System.currentTimeMillis()).substring(8));
+    }
+
+    int saveAlarm(Alarm alarm) {
         String original = dataCon.getString("alarm_list", "").trim();
         Log.d("saveAlarm", "saveAlarm Original: " + original + alarm.toString() + "=");
         dataCon.putString("alarm_list", original + alarm.toString() + "=");
+        return alarm.id;
+    }
+
+    int saveAlarm(int d, int h, int m, int s, boolean sound, boolean vibration, String name, int problem_type, boolean favorite) {
+        Alarm alarm = new Alarm(createID(), d, h, m, s, sound, vibration, name, problem_type, favorite);
+        return saveAlarm(alarm);
+    }
+
+    void saveAlarmId(int id, int alarm_id) {
+        String original = dataCon.getString("alarm_list", "").trim();
+        String[] list = original.split("=");
+        String new_list = "";
+        for(String s : list) {
+            s = s.trim();
+            if(s.equals("")) continue;
+            if(Integer.parseInt(s.split("-")[0]) == id) {
+                new_list += s.split("-")[0] + "-" + alarm_id + "-" + s.split("-")[2] + "=";
+                continue;
+            }
+            if(s!=null) new_list += s + "=";
+        }
+        dataCon.putString("alarm_list", new_list);
     }
 
     public boolean deleteAlarm(int id) {
@@ -112,6 +136,8 @@ public class AlarmController {
         String[] list = original.split("=");
         String new_list = "";
         for(String s : list) {
+            s = s.trim();
+            if(s.equals("")) continue;
             if(Integer.parseInt(s.split("-")[0]) == id) continue;
             if(s!=null) new_list += s + "=";
         }
@@ -119,18 +145,23 @@ public class AlarmController {
 
         Log.d("deleteAlarm", "deleteAlarm: " + alarm.toString());
 
-        Intent intent = new Intent(context, Receiver.class);
+        if(alarm.alarm_id != 0) cancelAlarm(alarm.alarm_id);
+        return true;
+    }
+
+    public void cancelAlarm(int alarm_id) {
+        Intent intent = new Intent(context, AlarmReceiver.class);
 
         PendingIntent pendingIntent = // 등록했을 때의 인텐트랑 같아야 삭제됨
                 PendingIntent.getBroadcast(
                         context,
-                        id,
+                        alarm_id,
                         intent,
                         PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
-        if(pendingIntent==null) return true;
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
-        alarmManager.cancel(pendingIntent);
-        return true;
+        if (pendingIntent != null) {
+            AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
+            alarmManager.cancel(pendingIntent);
+        }
     }
 
     public Alarm getAlarm(int id) {
@@ -138,7 +169,8 @@ public class AlarmController {
         Log.d("getAlarm", "getAlarm: " + original);
         String[] list = original.split("=");
         for(String s : list) {
-            s= s.trim();
+            s = s.trim();
+            if(s.equals("")) continue;
             String[] time = s.split("-");
             if(Integer.parseInt(time[0]) == id) {
                 return new Alarm(s);
@@ -150,27 +182,30 @@ public class AlarmController {
     public int getNearestAlarmId() {
         String original = dataCon.getString("alarm_list", "").trim();
         if(original.equals("")) return 0;
-        Log.d("getNearestAlarm", "getNearestAlarm: " + original);
+        Log.d("getNearestAlarm", "getNearestAlarm original: " + original);
         String[] list = original.split("=");
         String nearest = "";
         Calendar nearestCal = null;
         for(String s : list) {
-            s= s.trim();
-            String[] time = s.split("-")[1].split(":");
-            int d = Integer.parseInt(time[0]);
-            int h = Integer.parseInt(time[1]);
-            int m = Integer.parseInt(time[2]);
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(Calendar.DAY_OF_WEEK, d);
-            calendar.set(Calendar.HOUR_OF_DAY, h);
-            calendar.set(Calendar.MINUTE, m);
-            calendar.set(Calendar.SECOND, 0);
-            if(calendar.compareTo(Calendar.getInstance()) < 0) calendar.add(Calendar.DATE, 7);
-            Log.d("getNearestAlarm", "getNearestAlarm: " + calendar.get(Calendar.DAY_OF_WEEK) + ", " + calendar.get(Calendar.HOUR_OF_DAY) + ", " + calendar.get(Calendar.MINUTE) + ", " + calendar.get(Calendar.SECOND));
-            if(nearestCal == null || calendar.compareTo(nearestCal) < 0) {
-                nearest = s;
-                nearestCal = calendar;
-            }
+            s = s.trim();
+            if(s.equals("")) continue;
+            try {
+                String[] time = s.split("-")[1].split(":");
+                int d = Integer.parseInt(time[0]);
+                int h = Integer.parseInt(time[1]);
+                int m = Integer.parseInt(time[2]);
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.DAY_OF_WEEK, d);
+                calendar.set(Calendar.HOUR_OF_DAY, h);
+                calendar.set(Calendar.MINUTE, m);
+                calendar.set(Calendar.SECOND, 0);
+                if (calendar.compareTo(Calendar.getInstance()) < 0) calendar.add(Calendar.DATE, 7);
+                Log.d("getNearestAlarm", "getNearestAlarm: " + calendar.get(Calendar.DAY_OF_WEEK) + ", " + calendar.get(Calendar.HOUR_OF_DAY) + ", " + calendar.get(Calendar.MINUTE) + ", " + calendar.get(Calendar.SECOND));
+                if (nearestCal == null || calendar.compareTo(nearestCal) < 0) {
+                    nearest = s;
+                    nearestCal = calendar;
+                }
+            } catch (Exception e) { }
         }
         Log.d("getNearestAlarm", "NearestAlarm: " + nearest);
         try {
@@ -179,10 +214,17 @@ public class AlarmController {
             return 0;
         }
     }
+
+    public void setNearestAlarm() {
+        Alarm alarm = getAlarm(getNearestAlarmId());
+        if(alarm == null) return;
+
+        setAlarm(alarm);
+    }
 }
 
 class Alarm {
-    public int id;
+    public int id, alarm_id = 0;
     public String time;
     public boolean sound;
     public boolean vibration;
@@ -223,13 +265,14 @@ class Alarm {
     public Alarm(String s) {
         String[] t = s.split("-");
         this.id = Integer.parseInt(t[0]);
-        this.time = t[1];
+        this.alarm_id = Integer.parseInt(t[1]);
+        this.time = t[2];
         String[] tt = time.split(":");
         this.d = Integer.parseInt(tt[0]);
         this.h = Integer.parseInt(tt[1]);
         this.m = Integer.parseInt(tt[2]);
         this.s = Integer.parseInt(tt[3]);
-        String[] ttt = t[2].split("\\|");
+        String[] ttt = t[3].split("\\|");
         this.name = ttt[0];
         this.sound = Integer.parseInt(ttt[1]) == 1;
         this.vibration = Integer.parseInt(ttt[2]) == 1;
@@ -237,7 +280,11 @@ class Alarm {
         this.favorite = Integer.parseInt(ttt[4]) == 1;
     }
 
+    public void setAlarmId(int alarm_id) {
+        this.alarm_id = alarm_id;
+    }
+
     public String toString() {
-        return id + "-" + time + "-" + name + "|" + (sound ? "1" : "0") + "|" + (vibration ? "1" : "0") + "|" + problem_type + "|" + (favorite ? "1" : "0");
+        return id + "-" + alarm_id + "-" + time + "-" + name + "|" + (sound ? "1" : "0") + "|" + (vibration ? "1" : "0") + "|" + problem_type + "|" + (favorite ? "1" : "0");
     }
 }

@@ -44,18 +44,9 @@ public class RestartAlarmService extends Service {
         String alarms_list = dataCon.getString("alarms_list", "").trim();
         String[] list = alarms_list.split("=");
 
-        for(String s: list) {
-            if(s!=null) {
-                AlarmData alarmData = new AlarmData(s);
-                Log.d("MainActivity", "reload: " + alarmData.toString());
-                for(int id: alarmData.alarm_ids) {
-                    if(id!=0) {
-                        AlarmController alarmController = new AlarmController(getApplicationContext());
-                        alarmController.reloadAlarms(id);
-                    }
-                }
-            }
-        }
+        AlarmController alarmController = new AlarmController(getApplicationContext());
+        alarmController.reloadAlarms();
+
         return START_REDELIVER_INTENT; // 서비스가 종료되었을 때, 자동으로 재시작
     }
 }

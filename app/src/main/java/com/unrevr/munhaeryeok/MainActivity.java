@@ -66,6 +66,9 @@ public class MainActivity extends AppCompatActivity {
         setProgressBar();
         setNearestAlarm();
 
+        Intent kill_alarm = new Intent("alarm_killed_main");
+        sendBroadcast(kill_alarm);
+
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         NotificationChannel notificationChannel = new NotificationChannel("alarm", "alarm", NotificationManager.IMPORTANCE_DEFAULT);
         notificationManager.createNotificationChannel(notificationChannel);
@@ -351,22 +354,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void reloadAlarms() {
-        DataController dataCon = new DataController(getApplicationContext(),"alarm_data");
-        String alarms_list = dataCon.getString("alarms_list", "").trim();
-        String[] list = alarms_list.split("=");
-
-        for(String s: list) {
-            if(s!=null&&s!="") {
-                AlarmData alarmData = new AlarmData(s);
-                Log.d("MainActivity", "reload: " + alarmData.toString());
-                for(int id: alarmData.alarm_ids) {
-                    if(id!=0) {
-                        AlarmController alarmController = new AlarmController(getApplicationContext());
-                        alarmController.reloadAlarms(id);
-                    }
-                }
-            }
-        }
+        AlarmController alarmController = new AlarmController(getApplicationContext());
+        alarmController.reloadAlarms();
     }
 
     @Override

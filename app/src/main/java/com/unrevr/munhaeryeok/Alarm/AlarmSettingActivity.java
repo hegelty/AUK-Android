@@ -2,7 +2,6 @@ package com.unrevr.munhaeryeok.Alarm;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -14,7 +13,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.skydoves.expandablelayout.ExpandableLayout;
@@ -137,7 +135,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
                     .setTitle("알람 삭제")
                     .setMessage("알람을 삭제하시겠습니까?")
                     .setPositiveButton("확인", (dialog, which) -> {
-                        if(deleteAlarm(id)) {
+                        if(deleteAlarmData(id)) {
                             finish();
                         } else {
                             new AlertDialog.Builder(this)
@@ -273,9 +271,6 @@ public class AlarmSettingActivity extends AppCompatActivity {
 
     boolean setAlarm() {
         try {
-            if(id==0) id = createID();
-            else deleteAlarm(id);
-
             TimePicker timePicker = findViewById(R.id.timePicker);
             int h = timePicker.getHour();
             int m = timePicker.getMinute();
@@ -297,14 +292,16 @@ public class AlarmSettingActivity extends AppCompatActivity {
 
             for(int i = 0; i < 7; i++) {
                 if(dayCheckBox[i].isChecked()) {
-                    int id = alarmController.setAlarm(i+1, h, m, 0, 0,
+                    days[i] = alarmController.saveAlarm(i+1, h, m, 0,
                             soundCheckBox.isChecked(), vibrationCheckBox.isChecked(), name, problem_type, favorite);
-                    days[i] = id;
+                    if(alarmController.getNearestAlarmId() == days[i]) {
+                        alarmController.reloadAlarms();
+                    }
                 }
             }
 
             AlarmData alarmData = new AlarmData(id, h, m, days, soundCheckBox.isChecked(), vibrationCheckBox.isChecked(), name, problem_type, favorite);
-            saveAlarm(alarmData);
+            saveAlarmData(alarmData);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -312,31 +309,39 @@ public class AlarmSettingActivity extends AppCompatActivity {
         return true;
     }
 
-    boolean deleteAlarm(int id) {
-        try {
-            if(id!=0) {
-                AlarmData alarmData = getAlarmData(id);
-
-                String original = dataCon.getString("alarms_list", "").trim();
-                String[] list = original.split("=");
-                String new_list = "";
-                for(String s : list) {
-                    if(Integer.parseInt(s.split("\\|")[0]) == id) {
-                        Log.d("deleteAlarm", "delete " + s);
-                        continue;
-                    }
-                    new_list += s + "=";
-                }
-                dataCon.putString("alarms_list", new_list);
-
-                AlarmController alarmController = new AlarmController(getApplicationContext());
-                for(int i=0;i<7;i++) {
-                    if(alarmData.alarm_ids[i]!=0) {
-                        Log.d("deleteAlarm", "delete(setting) " + alarmData.alarm_ids[i]);
-                        alarmController.deleteAlarm(alarmData.alarm_ids[i]);
-                    }
+    void deleteAlarm(int id) {
+        /*
+        알람 데이터에 있는 알람 모두 삭제
+         */
+        if(id!=0) {
+            AlarmData alarmData = getAlarmData(id);
+            if(alarmData==null) return;
+            AlarmController alarmController = new AlarmController(getApplicationContext());
+            for(int i=0;i<7;i++) {
+                if(alarmData.alarm_ids[i]!=0) {
+                    Log.d("deleteAlarm", "delete(setting) " + alarmData.alarm_ids[i]);
+                    alarmController.deleteAlarm(alarmData.alarm_ids[i]);
                 }
             }
+        }
+    }
+
+    boolean deleteAlarmData(int id) {
+        /*
+        알람 데이터 삭제
+         */
+        try {
+            deleteAlarm(id);
+            String original = dataCon.getString("alarms_list", "").trim();
+            String[] list = original.split("=");
+            String new_list = "";
+            for(String s : list) {
+                if(Integer.parseInt(s.split("\\|")[0]) != id) {
+                    new_list += s + "=";
+                }
+            }
+            original = new_list;
+            dataCon.putString("alarms_list", original);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -344,16 +349,40 @@ public class AlarmSettingActivity extends AppCompatActivity {
         return true;
     }
 
-    void saveAlarm(AlarmData alarmData) {
+    void saveAlarmData(AlarmData alarmData) {
+        /*
+        알람 데이터 저장
+         */
         String original = dataCon.getString("alarms_list", "").trim();
-        Log.d("saveAlarm", "data: " + alarmData.toString());
-        dataCon.putString("alarms_list", original + alarmData.toString() + "=");
+        if(alarmData.id != 0) { // update
+            deleteAlarm(id);
+            String[] list = original.split("=");
+            String new_list = "";
+            for(String s : list) {
+                s = s.trim();
+                if(s.equals("")) continue;
+                if(Integer.parseInt(s.split("\\|")[0]) == alarmData.id) {
+                    Log.d("saveAlarmData", "update: " + s + " -> " + alarmData.toString());
+                    new_list += alarmData.toString() + "=";
+                }
+                else new_list += s + "=";
+            }
+            original = new_list;
+            dataCon.putString("alarms_list", original);
+        }
+        else { // create
+            alarmData.id = createID();
+            Log.d("saveAlarmData", "data: " + alarmData.toString());
+            dataCon.putString("alarms_list", original + alarmData.toString() + "=");
+        }
     }
 
     AlarmData getAlarmData(int id) {
         String original = dataCon.getString("alarms_list", "").trim();
         String[] list = original.split("=");
         for(String s : list) {
+            s = s.trim();
+            if(s.equals("")) continue;
             if(Integer.parseInt(s.split("\\|")[0]) == id) {
                 return new AlarmData(s);
             }

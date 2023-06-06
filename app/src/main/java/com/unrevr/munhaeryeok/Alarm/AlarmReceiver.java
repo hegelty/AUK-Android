@@ -3,10 +3,8 @@ package com.unrevr.munhaeryeok.Alarm;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.util.Log;
 
-public class Receiver extends BroadcastReceiver {
+public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if("android.intent.action.BOOT_COMPLETED".equals(intent.getAction())) {
@@ -35,7 +33,7 @@ public class Receiver extends BroadcastReceiver {
             context.startService(alarm_indent);
 
             AlarmController alarmController = new AlarmController(context.getApplicationContext());
-            if (id != 0) alarmController.setAlarmAgain(id);
+            if (id != 0) alarmController.reloadAlarms();
         }
     }
 }

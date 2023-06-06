@@ -1,8 +1,10 @@
 package com.unrevr.munhaeryeok.Alarm;
 
 import android.app.KeyguardManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -39,6 +41,7 @@ public class AlarmActivity extends AppCompatActivity {
         Intent intent = getIntent();
 
         Log.d("AlarmSFActivity", "onCreate: SF");
+        registerReceiver(killReceiver, new IntentFilter("alarm_killed_main"));
 
         setTurnScreenOn(true);
         setShowWhenLocked(true);
@@ -75,6 +78,14 @@ public class AlarmActivity extends AppCompatActivity {
         Log.d("AlarmActivity", "onCreate: id: " + id + ", h: " + h + ", m: " + m + (problem_type == 1 ? "MC" : "SF"));
         initLayout();
     }
+
+    private final BroadcastReceiver killReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(android.content.Context context, Intent intent) {
+            Log.d("killReceiver", "onReceive");
+            onDestroy();
+        }
+    };
 
     void initLayout() {
         TextView timeTextView = findViewById(R.id.timeTextView);
