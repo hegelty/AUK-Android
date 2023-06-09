@@ -26,7 +26,6 @@ public class AlarmController {
         return setAlarm(alarm.d, alarm.h, alarm.m, alarm.s, alarm.id, alarm.sound, alarm.vibration, alarm.name, alarm.problem_type, alarm.favorite);
     }
     public int setAlarm(int d, int h, int m, int s, int id, boolean sound, boolean vibration, String name, int problem_type, boolean favorite) {
-        // id = 0 이면 새로운 알람 생성
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.DAY_OF_WEEK, d);
         calendar.set(Calendar.HOUR_OF_DAY, h);
@@ -36,8 +35,11 @@ public class AlarmController {
         int alarm_id = createAlarmID();
         if(calendar.compareTo(Calendar.getInstance()) < 0) calendar.add(Calendar.DATE, 7);
 
+        Log.d("setAlarm", "id: " + id + ", alarm_id: " + alarm_id + ", h: " + h + ", m: " + m + ", sound: " + sound + ", vibration: " + vibration + ", name: " + name + ", problem_type: " + problem_type);
+
         Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.putExtra("alarm", id);
+        intent.putExtra("id", id);
+        intent.putExtra("alarm_id", alarm_id);
         intent.putExtra("h", h);
         intent.putExtra("m", m);
         intent.putExtra("sound", sound);
@@ -68,13 +70,16 @@ public class AlarmController {
 
     public void reloadAlarms() {
         String original = dataCon.getString("alarm_list", "").trim();
+        Log.d("reloadAlarms", original);
         String[] list = original.split("=");
         String new_list = "";
         for(String s : list) {
             try {
-                if (Integer.parseInt(s.split("-")[1]) != 0) {
-                    cancelAlarm(Integer.parseInt(s.split("-")[1]));
-                    new_list += s.split("-")[0] + "-0-" + s.split("-")[2] + "=";
+                Alarm alarm = new Alarm(s);
+                if (alarm.alarm_id != 0) {
+                    cancelAlarm(alarm.alarm_id);
+                    alarm.setAlarmId(0);
+                    new_list += alarm.toString() + "=";
                 }
                 else new_list += s + "=";
             } catch(Exception e) {
@@ -117,11 +122,13 @@ public class AlarmController {
         for(String s : list) {
             s = s.trim();
             if(s.equals("")) continue;
-            if(Integer.parseInt(s.split("-")[0]) == id) {
-                new_list += s.split("-")[0] + "-" + alarm_id + "-" + s.split("-")[2] + "=";
+            Alarm alarm = new Alarm(s);
+            if(alarm.id == id) {
+                alarm.setAlarmId(alarm_id);
+                new_list += alarm.toString() + "=";
                 continue;
             }
-            if(s!=null) new_list += s + "=";
+            new_list += s + "=";
         }
         dataCon.putString("alarm_list", new_list);
     }
@@ -188,9 +195,10 @@ public class AlarmController {
         Calendar nearestCal = null;
         for(String s : list) {
             s = s.trim();
+            Log.d("getNearestAlarm", "getNearestAlarm: " + s);
             if(s.equals("")) continue;
             try {
-                String[] time = s.split("-")[1].split(":");
+                String[] time = s.split("-")[2].split(":");
                 int d = Integer.parseInt(time[0]);
                 int h = Integer.parseInt(time[1]);
                 int m = Integer.parseInt(time[2]);
@@ -205,7 +213,9 @@ public class AlarmController {
                     nearest = s;
                     nearestCal = calendar;
                 }
-            } catch (Exception e) { }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         Log.d("getNearestAlarm", "NearestAlarm: " + nearest);
         try {
@@ -263,6 +273,7 @@ class Alarm {
     }
 
     public Alarm(String s) {
+        Log.d("Alarm", "Alarm: " + s);
         String[] t = s.split("-");
         this.id = Integer.parseInt(t[0]);
         this.alarm_id = Integer.parseInt(t[1]);

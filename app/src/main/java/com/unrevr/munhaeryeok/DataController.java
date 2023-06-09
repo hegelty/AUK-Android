@@ -33,7 +33,7 @@ public class DataController {
                 String result = "";
                 String line;
                 while ((line = bufferedReader.readLine()) != null) {
-                    Log.d("DataController", line);
+                    Log.d("DataController", "getString: " + line);
                     result += "\n" + line;
                 }
                 inputStreamReader.close();

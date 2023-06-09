@@ -41,6 +41,7 @@ public class AlarmActivity extends AppCompatActivity {
         Intent intent = getIntent();
 
         Log.d("AlarmSFActivity", "onCreate: SF");
+
         registerReceiver(killReceiver, new IntentFilter("alarm_killed_main"));
 
         setTurnScreenOn(true);
@@ -58,8 +59,10 @@ public class AlarmActivity extends AppCompatActivity {
         solved = false;
 
         id = intent.getIntExtra("id", 0);
+
         h = intent.getIntExtra("h", 0);
         m = intent.getIntExtra("m", 0);
+
         // 1: 객관, 2: 주관
         problem_type = intent.getIntExtra("problem_type", 1);
         int problem_id = intent.getIntExtra("id", 0);

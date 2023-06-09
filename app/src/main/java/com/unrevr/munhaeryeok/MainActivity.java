@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.main_activity_layout);
 
         checkFirstRun();
+        checkFirstRunVersion();
         getOverlayPermission();
         addIgnoreBatteryOptimizationList();
         requestAllowNotification();
@@ -115,19 +116,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void checkFirstRun() {
-        SharedPreferences pref = getSharedPreferences("isFirst", Activity.MODE_PRIVATE);
-        SharedPreferences.Editor editor = pref.edit();
-        boolean first = pref.getBoolean("isFirst", true);
+        DataController dataController = new DataController(getApplicationContext(), "isFirst");
+        boolean first = dataController.getInt("isFirst", 0) == 1;
 
-        if(first) {
-            editor.putBoolean("isFirst", true);
-            editor.apply();
+        if(!first) {
+            dataController.putInt("isFirst", 1);
 
             DataController dataCon = new DataController(getApplicationContext(), "alarm_data");
             if(dataCon.getInt("last_alarm_id", 0) == 0) {
                 dataCon.putInt("last_alarm_id", 0);
                 dataCon.putString("alarm_list", "");
             }
+        }
+    }
+
+    void checkFirstRunVersion() {
+        DataController dataController = new DataController(getApplicationContext(), "isFirst");
+        boolean first = dataController.getInt(String.valueOf(R.string.app_version), 0) == 1;
+        Log.d("first", String.valueOf(first));
+        if(!first) {
+            DataController dataCon = new DataController(getApplicationContext(), "alarm_data");
+            dataCon.putString("alarm_list", "");
+            dataCon.putInt("last_alarm_id", 0);
+
+            DataController dataCon2 = new DataController(getApplicationContext(), "alarm");
+            dataCon2.putString("alarm_list", "");
+            dataCon2.putInt("last_alarm_id", 0);
+
+            dataController.putInt(String.valueOf(R.string.app_version), 1);
         }
     }
 

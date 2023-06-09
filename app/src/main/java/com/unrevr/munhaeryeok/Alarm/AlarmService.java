@@ -3,6 +3,7 @@ package com.unrevr.munhaeryeok.Alarm;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.util.Log;
 
 public class AlarmService extends Service {
     public AlarmService() {}
@@ -21,6 +22,10 @@ public class AlarmService extends Service {
         boolean vibration = intent.getBooleanExtra("vibration", false);
         String name = intent.getStringExtra("name");
         int problem_type = intent.getIntExtra("problem_type", 0);
+
+        // 알람 재설정
+        AlarmController alarmController = new AlarmController(getApplicationContext());
+        alarmController.reloadAlarms();
 
         showAlarm(id, h, m, sound, vibration, name, problem_type);
         return START_REDELIVER_INTENT; // 서비스가 종료되었을 때, 자동으로 재시작
