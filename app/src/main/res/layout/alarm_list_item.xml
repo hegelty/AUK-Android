@@ -22,7 +22,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/nameTextView"
+                android:id="@+id/problemTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:singleLine="true"
@@ -49,7 +49,7 @@
                 android:clickable="false"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/nameTextView"
+                app:layout_constraintStart_toEndOf="@+id/problemTitle"
                 app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -61,7 +61,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/timeTextView"
+                android:id="@+id/problemTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
@@ -86,12 +86,12 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.02"
-                app:layout_constraintStart_toEndOf="@+id/timeTextView"
+                app:layout_constraintStart_toEndOf="@+id/problemTextView"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.95" />
 
             <TextView
-                android:id="@+id/dayTextView"
+                android:id="@+id/answerTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="20dp"

@@ -50,6 +50,11 @@ public class UserInfo {
         wrongCount = dataController.getInt("wrong_count", 0);
     }
 
+    public List<Integer> getWrongProblems(int type) { // MC: 1, SF: 2
+        if(type == 1) return wrongMCProblems;
+        else return wrongSFProblems;
+    }
+
     public int solve() {
         dataController = new DataController(context,"user_info");
         solvedCount++;

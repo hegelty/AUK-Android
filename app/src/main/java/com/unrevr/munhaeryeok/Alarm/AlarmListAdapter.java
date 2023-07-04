@@ -93,11 +93,11 @@ public class AlarmListAdapter extends RecyclerView.Adapter<AlarmListAdapter.View
         public ViewHolder(@NonNull View parent) {
             super(parent);
 
-            nameTextView = itemView.findViewById(R.id.nameTextView);
-            timeTextView = itemView.findViewById(R.id.timeTextView);
+            nameTextView = itemView.findViewById(R.id.problemTitle);
+            timeTextView = itemView.findViewById(R.id.problemTextView);
             amfmTextView = itemView.findViewById(R.id.amfmTextView);
             favoriteCheckBox = itemView.findViewById(R.id.favoriteCheckBox);
-            dayTextView = itemView.findViewById(R.id.dayTextView);
+            dayTextView = itemView.findViewById(R.id.answerTextView);
 
             parent.setOnClickListener(v -> {
                 int position = getAdapterPosition();

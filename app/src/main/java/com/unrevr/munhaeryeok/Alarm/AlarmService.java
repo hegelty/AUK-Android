@@ -23,10 +23,6 @@ public class AlarmService extends Service {
         String name = intent.getStringExtra("name");
         int problem_type = intent.getIntExtra("problem_type", 0);
 
-        // 알람 재설정
-        AlarmController alarmController = new AlarmController(getApplicationContext());
-        alarmController.reloadAlarms();
-
         showAlarm(id, h, m, sound, vibration, name, problem_type);
         return START_REDELIVER_INTENT; // 서비스가 종료되었을 때, 자동으로 재시작
     }

@@ -17,12 +17,15 @@
             android:layout_height="60dp"
             android:orientation="horizontal">
 
-            <Button
+            <ImageButton
                 android:id="@+id/backwardButton"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_gravity="start"
                 android:layout_marginStart="15dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/iconmonstr_backspace_filled"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
@@ -46,7 +49,50 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
+            <Button
+                android:id="@+id/allButton"
+                android:layout_width="75dp"
+                android:layout_height="35dp"
+                android:text="전체"
+                android:textColor="@color/white"
+                android:background="@drawable/round_corner_blue"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.05"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/SFButton"
+                android:layout_width="75dp"
+                android:layout_height="35dp"
+                android:text="주관식"
+                android:textColor="@color/white"
+                android:background="@drawable/round_corner_black"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.01"
+                app:layout_constraintStart_toEndOf="@+id/allButton"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.50" />
+            <Button
+                android:id="@+id/MCButton"
+                android:layout_width="75dp"
+                android:layout_height="35dp"
+                android:text="객관식"
+                android:textColor="@color/white"
+                android:background="@drawable/round_corner_black"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.01"
+                app:layout_constraintStart_toEndOf="@+id/SFButton"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.50" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -57,7 +103,7 @@
                 android:orientation="vertical" >
 
                 <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/alarmRecyclerView"
+                    android:id="@+id/wrongProblemsRecyclerView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp">

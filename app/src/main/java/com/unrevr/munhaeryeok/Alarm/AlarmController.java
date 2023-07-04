@@ -153,6 +153,7 @@ public class AlarmController {
         Log.d("deleteAlarm", "deleteAlarm: " + alarm.toString());
 
         if(alarm.alarm_id != 0) cancelAlarm(alarm.alarm_id);
+        reloadAlarms();
         return true;
     }
 

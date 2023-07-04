@@ -30,7 +30,7 @@ public class RestartAlarmService extends Service {
         editor.putBoolean("test", true);
         editor.apply();
 
-        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, new Intent(getApplicationContext(), AlarmListActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, new Intent(getApplicationContext(), AlarmListActivity.class), PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
 
         Notification notification = new Notification.Builder(getApplicationContext(), "alarm")
                 .setContentTitle("AUK")

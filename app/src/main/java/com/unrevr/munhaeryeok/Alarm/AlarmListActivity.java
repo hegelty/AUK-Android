@@ -51,7 +51,7 @@ public class AlarmListActivity extends AppCompatActivity {
     }
 
     void setRecyclerView() {
-        RecyclerView recyclerView = findViewById(R.id.alarmRecyclerView);
+        RecyclerView recyclerView = findViewById(R.id.wrongProblemsRecyclerView);
         recyclerView.setAdapter(null);
         DataController dataCon = new DataController(getApplicationContext(),"alarm_data");
         String original = dataCon.getString("alarms_list", "").trim();

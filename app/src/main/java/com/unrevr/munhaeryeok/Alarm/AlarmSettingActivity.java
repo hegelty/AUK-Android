@@ -2,6 +2,7 @@ package com.unrevr.munhaeryeok.Alarm;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -10,6 +11,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
@@ -150,7 +152,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
                     .show();
         });
 
-        Button backwardButton = findViewById(R.id.backwardButton);
+        ImageButton backwardButton = findViewById(R.id.backwardButton);
         backwardButton.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("알람 설정 취소")

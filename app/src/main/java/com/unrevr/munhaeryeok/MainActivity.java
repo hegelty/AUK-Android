@@ -4,12 +4,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -90,6 +88,11 @@ public class MainActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.progressBar).setOnClickListener(v -> {
+            Intent intent = new Intent(getApplicationContext(), WrongProblemsListActivity.class);
+            startActivity(intent);
+        });
+
+        findViewById(R.id.restudyText).setOnClickListener(v -> {
             Intent intent = new Intent(getApplicationContext(), WrongProblemsListActivity.class);
             startActivity(intent);
         });
@@ -232,13 +235,13 @@ public class MainActivity extends AppCompatActivity {
         int nearestAlarmId = alarmController.getNearestAlarmId();
         Log.d("MainActivity", "nearestAlarmId: " + nearestAlarmId);
         if(nearestAlarmId == 0) {
-            TextView nameTextView = findViewById(R.id.nameTextView);
+            TextView nameTextView = findViewById(R.id.problemTitle);
             nameTextView.setText("울릴 알람이 없습니다.");
-            TextView timeTextView = findViewById(R.id.timeTextView);
+            TextView timeTextView = findViewById(R.id.problemTextView);
             timeTextView.setText("00:00");
             TextView amfmTextView = findViewById(R.id.amfmTextView);
             amfmTextView.setText("");
-            TextView dayTextView = findViewById(R.id.dayTextView);
+            TextView dayTextView = findViewById(R.id.answerTextView);
             dayTextView.setText("");
             CheckBox favoriteCheckBox = findViewById(R.id.favoriteCheckBox);
             favoriteCheckBox.setVisibility(View.INVISIBLE);
@@ -254,10 +257,10 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("MainActivity", alarmData.toString());
                 for(int id: alarmData.alarm_ids) {
                     if(id == nearestAlarmId) {
-                        TextView nameTextView = findViewById(R.id.nameTextView);
-                        TextView timeTextView = findViewById(R.id.timeTextView);
+                        TextView nameTextView = findViewById(R.id.problemTitle);
+                        TextView timeTextView = findViewById(R.id.problemTextView);
                         TextView amfmTextView = findViewById(R.id.amfmTextView);
-                        TextView dayTextView = findViewById(R.id.dayTextView);
+                        TextView dayTextView = findViewById(R.id.answerTextView);
                         CheckBox favoriteCheckBox = findViewById(R.id.favoriteCheckBox);
 
                         nameTextView.setText(alarmData.name);

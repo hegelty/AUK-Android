@@ -6,7 +6,7 @@ import java.io.InputStream;
 
 public class Problem {
     public String question;
-    int problemType;
+    public int problemType;
     public int id;
     public String[] mcAnswers;
     public int mcCorrectAnswer;
@@ -40,7 +40,7 @@ public class Problem {
             is.close();
             String[] problems = str.split(";");
             if(id==0) id = (int)(Math.random()*problems.length);
-            Log.d("id", id+"");
+            Log.d("id", id+"-"+problems.length);
             String[] problem = problems[id].trim().split("\\|");
             question = problem[0];
             mcAnswers = new String[4];

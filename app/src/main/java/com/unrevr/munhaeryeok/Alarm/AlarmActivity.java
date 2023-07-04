@@ -65,7 +65,7 @@ public class AlarmActivity extends AppCompatActivity {
 
         // 1: 객관, 2: 주관
         problem_type = intent.getIntExtra("problem_type", 1);
-        int problem_id = intent.getIntExtra("id", 0);
+        int problem_id = intent.getIntExtra("problem_id", 0);
 
         if(problem_type == Problem.MC) {
             if(problem_id!=0) problem = new Problem(Problem.MC, problem_id);
@@ -86,12 +86,12 @@ public class AlarmActivity extends AppCompatActivity {
         @Override
         public void onReceive(android.content.Context context, Intent intent) {
             Log.d("killReceiver", "onReceive");
-            onDestroy();
+            finish();
         }
     };
 
     void initLayout() {
-        TextView timeTextView = findViewById(R.id.timeTextView);
+        TextView timeTextView = findViewById(R.id.problemTextView);
         TextView AMPMTextView = findViewById(R.id.AMPMTextView);
         TextView questionTextView = findViewById(R.id.questionTextView);
         TextView hintTextView = findViewById(R.id.hintTextView);
@@ -270,7 +270,13 @@ public class AlarmActivity extends AppCompatActivity {
             stopSound();
 
             // finish this activity
-            finish();
+            // finish();
+        }
+        else {
+            // 알람 재설정
+            Log.d("AlarmActivity", "AlarmController reloadAlarms()");
+            AlarmController alarmController = new AlarmController(getApplicationContext());
+            alarmController.reloadAlarms();
         }
         super.onDestroy();
     }
