@@ -21,13 +21,17 @@ public class SettingActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.developersLayout).setOnClickListener(v -> {
-            TextView textView = findViewById(R.id.textView);
-            textView.setText(R.string.developers);
+            Intent intent = new Intent(SettingActivity.this, SettingInfoActivity.class);
+            intent.putExtra("content", getString(R.string.developers));
+            intent.putExtra("title", "개발자");
+            startActivity(intent);
         });
 
         findViewById(R.id.licenseButton).setOnClickListener(v -> {
-            TextView textView = findViewById(R.id.textView);
-            textView.setText(R.string.opensource_licence);
+            Intent intent = new Intent(SettingActivity.this, SettingInfoActivity.class);
+            intent.putExtra("content", getString(R.string.opensource_licence));
+            intent.putExtra("title", "오픈소스 라이선스");
+            startActivity(intent);
         });
 
         findViewById(R.id.policyButton).setOnClickListener(v -> {

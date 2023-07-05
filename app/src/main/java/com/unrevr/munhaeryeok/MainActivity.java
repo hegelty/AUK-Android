@@ -8,6 +8,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -37,6 +38,11 @@ import com.unrevr.munhaeryeok.Alarm.AlarmData;
 import com.unrevr.munhaeryeok.Alarm.AlarmListActivity;
 import com.unrevr.munhaeryeok.Alarm.WrongProblemsListActivity;
 
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -97,7 +103,9 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        Log.d("uuid", UserInfo.id);
         setTodayContents();
+        uploadScore();
 
         // splash screen
         final View content = findViewById(android.R.id.content);
@@ -120,9 +128,9 @@ public class MainActivity extends AppCompatActivity {
 
     void checkFirstRun() {
         DataController dataController = new DataController(getApplicationContext(), "isFirst");
-        boolean first = dataController.getInt("isFirst", 0) == 1;
+        boolean first = dataController.getInt("isFirst", 0) == 0;
 
-        if(!first) {
+        if(first) {
             dataController.putInt("isFirst", 1);
 
             DataController dataCon = new DataController(getApplicationContext(), "alarm_data");
@@ -130,24 +138,16 @@ public class MainActivity extends AppCompatActivity {
                 dataCon.putInt("last_alarm_id", 0);
                 dataCon.putString("alarm_list", "");
             }
+
+            UserInfo userInfo = UserInfo.getInstance(getApplicationContext());
+            userInfo.init();
         }
     }
 
     void checkFirstRunVersion() {
         DataController dataController = new DataController(getApplicationContext(), "isFirst");
-        boolean first = dataController.getInt(String.valueOf(R.string.app_version), 0) == 1;
+        boolean first = dataController.getInt(String.valueOf(R.string.app_version), 0) == 0;
         Log.d("first", String.valueOf(first));
-        if(!first) {
-            DataController dataCon = new DataController(getApplicationContext(), "alarm_data");
-            dataCon.putString("alarm_list", "");
-            dataCon.putInt("last_alarm_id", 0);
-
-            DataController dataCon2 = new DataController(getApplicationContext(), "alarm");
-            dataCon2.putString("alarm_list", "");
-            dataCon2.putInt("last_alarm_id", 0);
-
-            dataController.putInt(String.valueOf(R.string.app_version), 1);
-        }
     }
 
     void getOverlayPermission() {
@@ -226,8 +226,8 @@ public class MainActivity extends AppCompatActivity {
         ProgressBar progressBar = findViewById(R.id.progressBar);
         TextView progressText = findViewById(R.id.progressText);
 
-        progressBar.setProgress(UserInfo.score);
-        progressText.setText(UserInfo.score + " / 100");
+        progressBar.setProgress(userInfo.score);
+        progressText.setText(userInfo.score + " / 100");
     }
 
     void setNearestAlarm() {
@@ -369,6 +369,42 @@ public class MainActivity extends AppCompatActivity {
             todayContent2.setText("인터넷 연결이 필요합니다.");
             readButton1.setOnClickListener(v -> {});
             readButton2.setOnClickListener(v -> {});
+        }
+    }
+
+    void uploadScore() {
+        Date date = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
+        String today = simpleDateFormat.format(date);
+        if(!getSharedPreferences("uploaded", MODE_PRIVATE).getString("date", "0").equals(today)) {
+            Disposable backgroundtask = null;
+            if (isNetworkAvailable()) {
+                UserInfo userInfo = UserInfo.getInstance(getApplicationContext());
+                userInfo.getUserInfo();
+                backgroundtask = Observable.fromCallable(() -> {
+                            String res = Jsoup.connect("https://auk.hegelty.space/upload_score")
+                                    .method(Connection.Method.POST)
+                                    .data("id", UserInfo.id.trim())
+                                    .data("score", String.valueOf(userInfo.score))
+                                    .execute()
+                                    .body();
+                            if (res.equals("success")) {
+                                SharedPreferences.Editor editor = getSharedPreferences("uploaded", MODE_PRIVATE).edit();
+                                editor.putString("date", today);
+                                editor.apply();
+                            }
+                            return res;
+                        })
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .onErrorReturn((e) -> {
+                            Log.d("MainActivity", "error: " + e.toString());
+                            return null;
+                        })
+                        .subscribe((res) -> {
+                            Log.d("uploadScore", res);
+                        });
+            }
         }
     }
 

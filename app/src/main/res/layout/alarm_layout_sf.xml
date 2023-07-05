@@ -93,16 +93,18 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/submitButton"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:text="V"
+                    android:background="@null"
+                    android:src="@drawable/iconmonstr_check_mark_circle_filled"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:scaleType="fitCenter" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <TextView

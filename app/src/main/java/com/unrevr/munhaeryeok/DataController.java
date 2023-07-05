@@ -40,8 +40,8 @@ public class DataController {
                 inputStream.close();
                 return result;
             }
-        } catch (Exception ignored) {}
-        return defaultValue;
+            return defaultValue;
+        } catch (Exception ignored) {return defaultValue;}
     }
 
     public void putInt(String key, int value) {
@@ -54,6 +54,7 @@ public class DataController {
 
     public int getInt(String key, int defaultValue) {
         try {
+            Log.d("DataController", "getInt: " + name + "_" + key);
             InputStream inputStream = context.openFileInput(name + "_" + key);
             if (inputStream!=null) {
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
@@ -63,7 +64,7 @@ public class DataController {
                 inputStream.close();
                 return result;
             }
-        } catch (Exception ignored) {}
-        return defaultValue;
+            return defaultValue;
+        } catch (Exception ignored) {return defaultValue;}
     }
 }

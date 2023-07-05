@@ -11,7 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_margin="15dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
         android:clickable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -20,7 +21,9 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp">
 
             <Button
                 android:id="@+id/settingButton"
@@ -102,6 +105,8 @@
             android:textStyle="bold"
             android:textColor="@color/black"
             android:layout_marginTop="10dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
             />
 
         <LinearLayout
@@ -111,6 +116,8 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:elevation="4dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
             android:background="@drawable/round_corner_black">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -226,6 +233,8 @@
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/black"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
             android:layout_marginTop="10dp"
             />
 
@@ -246,6 +255,8 @@
                     android:background="@drawable/round_corner_white"
                     android:clickable="true"
                     android:elevation="4dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="15dp"
                     android:orientation="vertical">
 
                     <TextView
@@ -253,6 +264,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="15dp"
+                        android:layout_marginEnd="15dp"
                         android:layout_marginTop="10dp"
                         android:text="전세의 배신"
                         android:textColor="@color/tblack"
@@ -264,6 +276,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="15dp"
+                        android:layout_marginEnd="15dp"
                         android:text="심윤희 칼럼"
                         android:textColor="@color/gray" />
 
@@ -298,7 +311,10 @@
                     android:background="@drawable/round_corner_white"
                     android:clickable="true"
                     android:elevation="4dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="15dp"
                     android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"
                     android:orientation="vertical">
 
                     <TextView
@@ -306,6 +322,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="15dp"
+                        android:layout_marginEnd="15dp"
                         android:layout_marginTop="10dp"
                         android:text="전세의 배신"
                         android:textColor="@color/tblack"
@@ -317,6 +334,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="15dp"
+                        android:layout_marginEnd="15dp"
                         android:text="심윤희 칼럼"
                         android:textColor="@color/gray" />
 

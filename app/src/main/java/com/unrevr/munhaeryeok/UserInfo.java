@@ -7,11 +7,13 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 public class UserInfo {
     private Context context;
 
-    public static int score;
+    public static String id;
+    public int score;
     public static int accuracy;
     public static int solvedCount;
     public static int wrongCount;
@@ -28,10 +30,16 @@ public class UserInfo {
         return new UserInfo(context);
     }
 
+    public void init() {
+        dataController = new DataController(context,"user_info");
+        if(id == null) makeUUID();
+    }
+
     public void getUserInfo() {
         dataController = new DataController(context,"user_info");
-
         score = dataController.getInt("score", 0);
+        Log.d("UserInfo", "getUserInfo: " + score);
+        id = dataController.getString("id", "");
 
         String[] wrongSFProblems_s = dataController.getString("wrong_sf_problems", "").trim().split(",");
         wrongSFProblems = new LinkedList<>();
@@ -92,5 +100,17 @@ public class UserInfo {
         }
 
         return score;
+    }
+
+    public void makeUUID() {
+        dataController = new DataController(context,"user_info");
+        Random random = new Random();
+        id = random.ints(48, 122 + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(24)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+        dataController.putString("id", id);
+        Log.d("UUID", "makeUUID: " + id);
     }
 }

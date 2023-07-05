@@ -93,6 +93,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="15dp"
+                        android:layout_marginEnd="15dp"
                         android:autoSizeTextType="uniform"
                         android:text="아버지는 어머니보다 나를 더 좋아하신다.adfadf asdfadfadf"
                         android:textColor="@color/black"

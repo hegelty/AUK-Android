@@ -54,6 +54,7 @@
         <activity android:name=".Alarm.AlarmSettingActivity" />
         <activity android:name=".Alarm.AlarmListActivity" />
         <activity android:name=".SettingActivity" />
+        <activity android:name=".SettingInfoActivity" />
 
         <receiver
             android:name=".Alarm.AlarmReceiver"
