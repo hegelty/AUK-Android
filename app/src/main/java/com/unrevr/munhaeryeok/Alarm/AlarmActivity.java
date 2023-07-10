@@ -16,6 +16,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -96,7 +97,7 @@ public class AlarmActivity extends AppCompatActivity {
         TextView questionTextView = findViewById(R.id.questionTextView);
         TextView hintTextView = findViewById(R.id.hintTextView);
         Button closeButton = findViewById(R.id.closeButton);
-        Button submitButton = findViewById(R.id.submitButton);
+        ImageButton submitButton = findViewById(R.id.submitButton);
 
         if (problem_type == Problem.SF) {
             EditText answerEditText = findViewById(R.id.answerEditText);
@@ -241,7 +242,9 @@ public class AlarmActivity extends AppCompatActivity {
     // 강제로 끌때 동작
     @Override
     public void onPause() {
+        Log.d("AlarmActivity", "onPause");
         if(!solved&&!keyguardManager.isKeyguardLocked()) {
+            solved = true;
             Intent intent = new Intent(this, AlarmActivity.class);
             intent.putExtra("id", id);
             intent.putExtra("h", h);
@@ -259,7 +262,9 @@ public class AlarmActivity extends AppCompatActivity {
 
     @Override
     public void onDestroy() {
+        Log.d("AlarmActivity", "onDestroy");
         if(!solved) {
+            solved = true;
             Intent intent = new Intent(this, AlarmActivity.class);
             intent.putExtra("id", id);
             intent.putExtra("h", h);

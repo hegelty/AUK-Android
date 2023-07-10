@@ -23,9 +23,9 @@ public class AlarmController {
     }
 
     public int setAlarm(Alarm alarm) {
-        return setAlarm(alarm.d, alarm.h, alarm.m, alarm.s, alarm.id, alarm.sound, alarm.vibration, alarm.name, alarm.problem_type, alarm.favorite);
+        return setAlarm(alarm.d, alarm.h, alarm.m, alarm.s, alarm.id, alarm.sound, alarm.vibration, alarm.name, alarm.problem_type);
     }
-    public int setAlarm(int d, int h, int m, int s, int id, boolean sound, boolean vibration, String name, int problem_type, boolean favorite) {
+    public int setAlarm(int d, int h, int m, int s, int id, boolean sound, boolean vibration, String name, int problem_type) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.DAY_OF_WEEK, d);
         calendar.set(Calendar.HOUR_OF_DAY, h);
@@ -61,7 +61,7 @@ public class AlarmController {
                 pendingIntent
         );
 
-        Alarm alarm = new Alarm(id, d, h, m, s, sound, vibration, name, problem_type, favorite);
+        Alarm alarm = new Alarm(id, d, h, m, s, sound, vibration, name, problem_type);
         alarm.setAlarmId(alarm_id);
         saveAlarmId(id, alarm_id);
 
@@ -110,8 +110,8 @@ public class AlarmController {
         return alarm.id;
     }
 
-    int saveAlarm(int d, int h, int m, int s, boolean sound, boolean vibration, String name, int problem_type, boolean favorite) {
-        Alarm alarm = new Alarm(createID(), d, h, m, s, sound, vibration, name, problem_type, favorite);
+    int saveAlarm(int d, int h, int m, int s, boolean sound, boolean vibration, String name, int problem_type) {
+        Alarm alarm = new Alarm(createID(), d, h, m, s, sound, vibration, name, problem_type);
         return saveAlarm(alarm);
     }
 
@@ -242,16 +242,14 @@ class Alarm {
     public int d, h, m, s;
     public String name;
     public int problem_type;
-    public boolean favorite;
 
-    public Alarm(int id, String time, boolean sound, boolean vibrate, String name, int problem_type, boolean favorite) {
+    public Alarm(int id, String time, boolean sound, boolean vibrate, String name, int problem_type) {
         this.id = id;
         this.time = time;
         this.sound = sound;
         this.vibration = vibrate;
         this.name = name;
         this.problem_type = problem_type;
-        this.favorite = favorite;
         String[] t = time.split(":");
         this.d = Integer.parseInt(t[0]);
         this.h = Integer.parseInt(t[1]);
@@ -259,7 +257,7 @@ class Alarm {
         this.s = Integer.parseInt(t[3]);
     }
 
-    public Alarm(int id, int d, int h, int m, int s, boolean sound, boolean vibrate, String name, int problem_type, boolean favorite) {
+    public Alarm(int id, int d, int h, int m, int s, boolean sound, boolean vibrate, String name, int problem_type) {
         this.id = id;
         this.d = d;
         this.h = h;
@@ -269,7 +267,6 @@ class Alarm {
         this.vibration = vibrate;
         this.name = name;
         this.problem_type = problem_type;
-        this.favorite = favorite;
         this.time = d + ":" + h + ":" + m + ":" + s;
     }
 
@@ -289,7 +286,6 @@ class Alarm {
         this.sound = Integer.parseInt(ttt[1]) == 1;
         this.vibration = Integer.parseInt(ttt[2]) == 1;
         this.problem_type = Integer.parseInt(ttt[3]);
-        this.favorite = Integer.parseInt(ttt[4]) == 1;
     }
 
     public void setAlarmId(int alarm_id) {
@@ -297,6 +293,6 @@ class Alarm {
     }
 
     public String toString() {
-        return id + "-" + alarm_id + "-" + time + "-" + name + "|" + (sound ? "1" : "0") + "|" + (vibration ? "1" : "0") + "|" + problem_type + "|" + (favorite ? "1" : "0");
+        return id + "-" + alarm_id + "-" + time + "-" + name + "|" + (sound ? "1" : "0") + "|" + (vibration ? "1" : "0") + "|" + problem_type;
     }
 }

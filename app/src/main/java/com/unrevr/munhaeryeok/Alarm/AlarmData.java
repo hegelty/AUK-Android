@@ -2,6 +2,8 @@ package com.unrevr.munhaeryeok.Alarm;
 
 import android.util.Log;
 
+import com.unrevr.munhaeryeok.DataController;
+
 public class AlarmData {
     public int id;
     public int[] alarm_ids = {0, 0, 0, 0, 0, 0, 0};

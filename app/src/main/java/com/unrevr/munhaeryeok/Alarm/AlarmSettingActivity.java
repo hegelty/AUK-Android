@@ -257,6 +257,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
         CheckBox[] checkBoxes = getCheckBoxes();
         ArrayList<CheckBox> checkBoxesArrayList = new ArrayList<>();
         Collections.addAll(checkBoxesArrayList, checkBoxes);
+        checkBoxesArrayList.add(soundExpandableLayout.secondLayout.findViewById(R.id.soundCheckBox));
         checkBoxesArrayList.add(soundExpandableLayout.secondLayout.findViewById(R.id.vibrationCheckBox));
         checkBoxesArrayList.add(problemExpandableLayout.secondLayout.findViewById(R.id.mcCheckBox));
         checkBoxesArrayList.add(problemExpandableLayout.secondLayout.findViewById(R.id.sfCheckBox));
@@ -295,7 +296,7 @@ public class AlarmSettingActivity extends AppCompatActivity {
             for(int i = 0; i < 7; i++) {
                 if(dayCheckBox[i].isChecked()) {
                     days[i] = alarmController.saveAlarm(i+1, h, m, 0,
-                            soundCheckBox.isChecked(), vibrationCheckBox.isChecked(), name, problem_type, favorite);
+                            soundCheckBox.isChecked(), vibrationCheckBox.isChecked(), name, problem_type);
                     if(alarmController.getNearestAlarmId() == days[i]) {
                         alarmController.reloadAlarms();
                     }

@@ -1,5 +1,6 @@
 package com.unrevr.munhaeryeok.Alarm;
 
+import android.app.AlarmManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.unrevr.munhaeryeok.DataController;
 import com.unrevr.munhaeryeok.R;
 
 import java.util.ArrayList;
@@ -105,6 +107,28 @@ public class AlarmListAdapter extends RecyclerView.Adapter<AlarmListAdapter.View
                     if(onItemClickListener != null) {
                         onItemClickListener.onItemClick(v, position);
                     }
+                }
+            });
+
+            favoriteCheckBox.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    AlarmData alarmData = alarmItems.get(position);
+                    alarmData.favorite = !alarmData.favorite;
+
+                    DataController dataCon = new DataController(v.getContext(), "alarm_data");
+                    String original = dataCon.getString("alarms_list", "").trim();
+                    String[] list = original.split("=");
+                    String new_list = "";
+                    for(String s : list) {
+                        if(Integer.parseInt(s.split("\\|")[0]) != alarmData.id) {
+                            new_list += s + "=";
+                        } else {
+                            new_list += alarmData.toString() + "=";
+                        }
+                    }
+                    original = new_list;
+                    dataCon.putString("alarms_list", original);
                 }
             });
         }
