@@ -43,6 +43,8 @@ tasks.named('preBuild') { dependsOn bundledPolicy }
 
 // Android 16's Robolectric runtime requires Java 21.
 tasks.withType(Test).configureEach {
+    // Cold-start migration fixtures must not share application singletons with UI tests.
+    forkEvery = 1
     javaLauncher = javaToolchains.launcherFor {
         languageVersion = JavaLanguageVersion.of(21)
     }
