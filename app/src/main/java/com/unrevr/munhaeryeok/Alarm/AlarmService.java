@@ -21,7 +21,7 @@ import android.os.Vibrator;
 import android.util.Log;
 
 import com.unrevr.munhaeryeok.R;
-import com.unrevr.munhaeryeok.UserInfo;
+import com.unrevr.munhaeryeok.AlarmGrades;
 
 import java.util.concurrent.TimeUnit;
 
@@ -76,7 +76,7 @@ public class AlarmService extends Service {
     }
 
     private boolean ringNext() {
-        Intent intent = RingSession.nextUngraded(this, UserInfo.getInstance(this)::isGraded);
+        Intent intent = RingSession.nextUngraded(this, key -> AlarmGrades.isGraded(this, key));
         String occurrence = RingSession.key(intent);
         if (occurrence == null) {
             releaseOutputs();

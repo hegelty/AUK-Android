@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 /** The receiver, activity, and service access this queue on the main thread. */
 final class RingSession {
     static SharedPreferences state(Context context) {
-        return context.getSharedPreferences("ring_session", Context.MODE_PRIVATE);
+        return context.createDeviceProtectedStorageContext().getSharedPreferences("ring_session", Context.MODE_PRIVATE);
     }
 
     static String key(Intent intent) {

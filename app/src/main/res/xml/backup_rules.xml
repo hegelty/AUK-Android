@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
     <exclude domain="sharedpref" path="ring_session.xml" />
+    <exclude domain="device_sharedpref" path="ring_session.xml" />
+    <exclude domain="device_database" path="pending-alarm-grades.db" />
+    <exclude domain="device_database" path="pending-alarm-grades.db-journal" />
+    <exclude domain="device_database" path="pending-alarm-grades.db-wal" />
+    <exclude domain="device_database" path="pending-alarm-grades.db-shm" />
 </full-backup-content>
