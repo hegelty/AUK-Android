@@ -38,15 +38,25 @@ android {
 }
 
 // Use the same privacy notice in the APK and on the public policy page.
-abstract class BundlePrivacyPolicy extends Sync {
-    @Internal
+abstract class BundlePrivacyPolicy extends DefaultTask {
+    @InputFile
+    @PathSensitive(PathSensitivity.NAME_ONLY)
+    abstract RegularFileProperty getPolicyFile()
+
+    @OutputDirectory
     abstract DirectoryProperty getAssetDirectory()
+
+    @TaskAction
+    void copyPolicy() {
+        def target = assetDirectory.file('privacy.html').get().asFile.toPath()
+        java.nio.file.Files.copy(policyFile.get().asFile.toPath(), target,
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+    }
 }
 
 androidComponents.onVariants(androidComponents.selector().all()) { variant ->
     def policy = tasks.register("bundle${variant.name.capitalize()}PrivacyPolicy", BundlePrivacyPolicy) {
-        from rootProject.file('privacy.html')
-        into assetDirectory
+        policyFile.set(rootProject.layout.projectDirectory.file('privacy.html'))
     }
     variant.sources.assets.addGeneratedSourceDirectory(policy) { it.assetDirectory }
 }
