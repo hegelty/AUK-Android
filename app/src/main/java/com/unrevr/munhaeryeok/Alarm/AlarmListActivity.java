@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.unrevr.munhaeryeok.InsetActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -13,7 +13,7 @@ import com.unrevr.munhaeryeok.R;
 
 import java.util.ArrayList;
 
-public class AlarmListActivity extends AppCompatActivity {
+public class AlarmListActivity extends InsetActivity {
     AlarmListAdapter adapter;
     Boolean isFavorite = false;
     @Override

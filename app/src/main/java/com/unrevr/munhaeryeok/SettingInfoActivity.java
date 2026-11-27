@@ -5,9 +5,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
 
-public class SettingInfoActivity extends AppCompatActivity {
+public class SettingInfoActivity extends InsetActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

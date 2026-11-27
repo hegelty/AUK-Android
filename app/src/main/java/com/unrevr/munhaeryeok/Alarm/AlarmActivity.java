@@ -19,14 +19,14 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.unrevr.munhaeryeok.InsetActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.unrevr.munhaeryeok.Problem;
 import com.unrevr.munhaeryeok.R;
 import com.unrevr.munhaeryeok.UserInfo;
 
-public class AlarmActivity extends AppCompatActivity {
+public class AlarmActivity extends InsetActivity {
     int id, h, m, problem_type;
     Problem problem;
     String gradingKey;
