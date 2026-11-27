@@ -119,71 +119,28 @@ public class MainActivity extends InsetActivity {
     }
 
     void setNearestAlarm() {
-        AlarmController alarmController = new AlarmController(getApplicationContext());
-        int nearestAlarmId = alarmController.getNearestAlarmId();
-        Log.d("MainActivity", "nearestAlarmId: " + nearestAlarmId);
-        if(nearestAlarmId == 0) {
-            TextView nameTextView = findViewById(R.id.problemTitle);
-            nameTextView.setText("울릴 알람이 없습니다.");
-            TextView timeTextView = findViewById(R.id.problemTextView);
-            timeTextView.setText("00:00");
-            TextView amfmTextView = findViewById(R.id.amfmTextView);
-            amfmTextView.setText("");
-            TextView dayTextView = findViewById(R.id.answerTextView);
-            dayTextView.setText("");
-            CheckBox favoriteCheckBox = findViewById(R.id.favoriteCheckBox);
-            favoriteCheckBox.setVisibility(View.INVISIBLE);
+        AlarmController alarms = new AlarmController(this);
+        alarms.refreshAlarms();
+        AlarmData next = alarms.nearest();
+        TextView name = findViewById(R.id.problemTitle);
+        TextView time = findViewById(R.id.problemTextView);
+        TextView ampm = findViewById(R.id.amfmTextView);
+        TextView days = findViewById(R.id.answerTextView);
+        CheckBox favorite = findViewById(R.id.favoriteCheckBox);
+        if (next == null) {
+            name.setText(alarms.hasAlarms() && !alarms.canRing() ? "알람 권한이 필요합니다." : "울릴 알람이 없습니다.");
+            time.setText("00:00");
+            ampm.setText("");
+            days.setText("");
+            favorite.setVisibility(View.INVISIBLE);
             return;
         }
-        DataController dataCon = new DataController(getApplicationContext(),"alarm_data");
-        String alarms_list = dataCon.getString("alarms_list", "").trim();
-        String[] list = alarms_list.split("=");
-        for (String s : list) {
-            Log.d("MainActivity", s);
-            if(s!=null) {
-                AlarmData alarmData = new AlarmData(s);
-                Log.d("MainActivity", alarmData.toString());
-                for(int id: alarmData.alarm_ids) {
-                    if(id == nearestAlarmId) {
-                        TextView nameTextView = findViewById(R.id.problemTitle);
-                        TextView timeTextView = findViewById(R.id.problemTextView);
-                        TextView amfmTextView = findViewById(R.id.amfmTextView);
-                        TextView dayTextView = findViewById(R.id.answerTextView);
-                        CheckBox favoriteCheckBox = findViewById(R.id.favoriteCheckBox);
-
-                        nameTextView.setText(alarmData.name);
-                        int h = alarmData.h;
-                        if (h >= 12) {
-                            amfmTextView.setText("PM");
-                            if(h==12) {
-                                timeTextView.setText("12:" + String.format("%02d",alarmData.m));
-                            } else {
-                                timeTextView.setText(String.format("%02d",alarmData.h%12) + ": " + String.format("%02d",alarmData.m));
-                            }
-                        } else {
-                            amfmTextView.setText("AM");
-                            if(h==0) {
-                                timeTextView.setText("12:" + String.format("%02d",alarmData.m));
-                            } else {
-                                timeTextView.setText(String.format("%02d",alarmData.h) + ":" + String.format("%02d",alarmData.m));
-                            }
-                        }
-                        String days = "";
-                        String[] day = {"일", "월", "화", "수", "목", "금", "토"};
-                        for(int i=0;i<7;i++) {
-                            if(alarmData.alarm_ids[i]!=0) {
-                                if(days=="") days = day[i];
-                                else days = days + ", " + day[i];
-                            }
-                        }
-                        dayTextView.setText(days);
-                        favoriteCheckBox.setVisibility(View.VISIBLE);
-                        favoriteCheckBox.setChecked(alarmData.favorite);
-                        return;
-                    }
-                }
-            }
-        }
+        name.setText(next.name);
+        time.setText(next.timeLabel());
+        ampm.setText(next.h >= 12 ? "PM" : "AM");
+        days.setText(next.dayLabel());
+        favorite.setVisibility(View.VISIBLE);
+        favorite.setChecked(next.favorite);
     }
 
     @Override
