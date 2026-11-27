@@ -39,7 +39,7 @@ public class SettingActivity extends InsetActivity {
         user.getUserInfo();
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.privacy_title)
-                .setMessage(getString(R.string.privacy_summary, user.id.trim()))
+                .setMessage(getString(R.string.privacy_contact, user.id.trim()))
                 .setPositiveButton(R.string.privacy_full, (d, which) ->
                         showPrivacyPolicy())
                 .setNegativeButton(android.R.string.cancel, null)
