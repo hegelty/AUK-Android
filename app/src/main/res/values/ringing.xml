@@ -1,0 +1,5 @@
+<resources>
+    <string name="ringing_channel">기상 알람</string>
+    <string name="ringing_open_quiz">눌러서 문제 풀기</string>
+    <string name="ringing_cooldown">%1$d초 후 다시 답을 골라주세요.</string>
+</resources>

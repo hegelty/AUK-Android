@@ -1,7 +1,6 @@
 package com.unrevr.munhaeryeok;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -33,7 +32,6 @@ public class DataController {
                 String result = "";
                 String line;
                 while ((line = bufferedReader.readLine()) != null) {
-                    Log.d("DataController", "getString: " + line);
                     result += "\n" + line;
                 }
                 inputStreamReader.close();
@@ -54,7 +52,6 @@ public class DataController {
 
     public int getInt(String key, int defaultValue) {
         try {
-            Log.d("DataController", "getInt: " + name + "_" + key);
             InputStream inputStream = context.openFileInput(name + "_" + key);
             if (inputStream!=null) {
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);

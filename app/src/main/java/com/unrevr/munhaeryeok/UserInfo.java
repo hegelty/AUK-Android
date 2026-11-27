@@ -1,29 +1,24 @@
 package com.unrevr.munhaeryeok;
 
 import android.content.Context;
-import android.util.Log;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Random;
 
-public class UserInfo {
-    private Context context;
-
-    public static String id;
+public final class UserInfo {
+    private final LearningDatabase storage;
+    public String id;
     public int score;
-    public static int accuracy;
-    public static int solvedCount;
-    public static int wrongCount;
-    public static List<Integer> wrongSFProblems;
-    public static List<Integer> wrongMCProblems;
-
-    private DataController dataController;
 
     UserInfo(Context context) {
-        this.context = context;
+        this(LearningDatabase.get(context));
+        AlarmGrades.replay(context, this);
+    }
+
+    UserInfo(LearningDatabase storage) {
+        this.storage = storage;
     }
 
     public static UserInfo getInstance(Context context) {
@@ -31,86 +26,65 @@ public class UserInfo {
     }
 
     public void init() {
-        dataController = new DataController(context,"user_info");
-        if(id == null) makeUUID();
+        getUserInfo();
     }
 
     public void getUserInfo() {
-        dataController = new DataController(context,"user_info");
-        score = dataController.getInt("score", 0);
-        Log.d("UserInfo", "getUserInfo: " + score);
-        id = dataController.getString("id", "");
-
-        String[] wrongSFProblems_s = dataController.getString("wrong_sf_problems", "").trim().split(",");
-        wrongSFProblems = new LinkedList<>();
-        for (String wrongSFProblems_ : wrongSFProblems_s) {
-            if(!Objects.equals(wrongSFProblems_, "")&&wrongSFProblems_!=null) wrongSFProblems.add(Integer.parseInt(wrongSFProblems_));
+        try (Cursor row = storage.getReadableDatabase().rawQuery(
+                "SELECT installation, score FROM profile WHERE singleton = 1", null)) {
+            row.moveToFirst();
+            id = row.getString(0);
+            score = row.getInt(1);
         }
+    }
 
-        String[] wrongMCProblems_s = dataController.getString("wrong_mc_problems", "").trim().split(",");
-        wrongMCProblems = new LinkedList<>();
-        for (String wrongMCProblems_ : wrongMCProblems_s) {
-            if(!Objects.equals(wrongMCProblems_, "")&&wrongMCProblems_!=null) wrongMCProblems.add(Integer.parseInt(wrongMCProblems_));
+    public List<Integer> getWrongProblems(int type) {
+        List<Integer> problems = new ArrayList<>();
+        try (Cursor rows = storage.getReadableDatabase().rawQuery(
+                "SELECT problem FROM mistakes WHERE type = ? ORDER BY rowid",
+                new String[]{String.valueOf(type)})) {
+            while (rows.moveToNext()) problems.add(rows.getInt(0));
         }
-
-        accuracy = dataController.getInt("accuracy", 0);
-        solvedCount = dataController.getInt("solved_count", 0);
-        wrongCount = dataController.getInt("wrong_count", 0);
+        return problems;
     }
 
-    public List<Integer> getWrongProblems(int type) { // MC: 1, SF: 2
-        if(type == 1) return wrongMCProblems;
-        else return wrongSFProblems;
+    public boolean isGraded(String key) {
+        try (Cursor row = storage.getReadableDatabase().rawQuery(
+                "SELECT 1 FROM graded WHERE occurrence = ?", new String[]{key})) {
+            return row.moveToFirst();
+        }
     }
 
-    public int solve() {
-        dataController = new DataController(context,"user_info");
-        solvedCount++;
-        accuracy = solvedCount * 100 / (solvedCount + wrongCount);
-        score =  accuracy / 2 + (Math.min(solvedCount, 200)) / 4;
-        dataController.putInt("score", score);
-        dataController.putInt("solved_count", solvedCount);
-
-        return score;
+    public void recordAnswer(String occurrenceKey, Problem problem, boolean correct) {
+        recordAnswer(occurrenceKey, problem.problemType, problem.id, correct);
     }
 
-    public int wrong(int id, int type) { // MC: 1, SF: 2
-        dataController = new DataController(context,"user_info");
-        wrongCount++;
-        accuracy = solvedCount * 100 / (solvedCount + wrongCount);
-        score =  accuracy / 2 + (Math.min(solvedCount, 200)) / 4;
-        dataController.putInt("score", score);
-        dataController.putInt("wrong_count", wrongCount);
-
-        if(type == 1) {
-            if(!wrongMCProblems.contains(id)) wrongMCProblems.add(id);
-            String wrongMCProblems_ = "";
-            for (Integer wrongMCProblem : wrongMCProblems) {
-                wrongMCProblems_ += wrongMCProblem + ",";
+    void recordAnswer(String occurrenceKey, int type, int problemId, boolean correct) {
+        if (occurrenceKey == null || occurrenceKey.isEmpty()) {
+            throw new IllegalArgumentException("Missing alarm occurrence");
+        }
+        SQLiteDatabase db = storage.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            if (isGraded(occurrenceKey)) return;
+            db.execSQL("INSERT INTO graded VALUES (?)", new Object[]{occurrenceKey});
+            try (Cursor row = db.rawQuery("SELECT solved, wrong FROM profile WHERE singleton = 1", null)) {
+                row.moveToFirst();
+                long solved = row.getLong(0) + (correct ? 1 : 0);
+                long wrong = row.getLong(1) + (correct ? 0 : 1);
+                db.execSQL("UPDATE profile SET solved = ?, wrong = ?, score = ? WHERE singleton = 1",
+                        new Object[]{solved, wrong, scoreAfter(solved, wrong)});
             }
-            dataController.putString("wrong_mc_problems", wrongMCProblems_);
+            if (!correct) LearningDatabase.addMistake(db, type, problemId);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
         }
-        else {
-            if(!wrongSFProblems.contains(id)) wrongSFProblems.add(id);
-            String wrongSFProblems_ = "";
-            for (Integer wrongSFProblem : wrongSFProblems) {
-                wrongSFProblems_ += wrongSFProblem + ",";
-            }
-            dataController.putString("wrong_sf_problems", wrongSFProblems_);
-        }
-
-        return score;
     }
 
-    public void makeUUID() {
-        dataController = new DataController(context,"user_info");
-        Random random = new Random();
-        id = random.ints(48, 122 + 1)
-                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
-                .limit(24)
-                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                .toString();
-        dataController.putString("id", id);
-        Log.d("UUID", "makeUUID: " + id);
+    static int scoreAfter(long solved, long wrong) {
+        long total = solved + wrong;
+        long accuracy = total == 0 ? 0 : solved * 100 / total;
+        return (int) (accuracy / 2 + Math.min(solved, 200) / 4);
     }
 }
