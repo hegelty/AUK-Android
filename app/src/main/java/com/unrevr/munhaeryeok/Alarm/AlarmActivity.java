@@ -19,7 +19,7 @@ import com.unrevr.munhaeryeok.InsetActivity;
 
 import com.unrevr.munhaeryeok.Problem;
 import com.unrevr.munhaeryeok.R;
-import com.unrevr.munhaeryeok.UserInfo;
+import com.unrevr.munhaeryeok.AlarmGrades;
 
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
@@ -61,7 +61,7 @@ public class AlarmActivity extends InsetActivity {
         occurrence = RingSession.key(intent);
         solved = saved != null && saved.getBoolean("solved");
         if (!solved && RingSession.isActive(this, occurrence)
-                && UserInfo.getInstance(this).isGraded(occurrence)) {
+                && AlarmGrades.isGraded(this, occurrence)) {
             RingSession.end(this, occurrence);
             startService(new Intent(this, AlarmService.class));
         }
@@ -123,7 +123,7 @@ public class AlarmActivity extends InsetActivity {
             if (choice >= 0) wrongChoices |= 1 << choice;
         }
         if (matches || attempts >= 2) {
-            UserInfo.getInstance(getApplicationContext()).recordAnswer(occurrence, problem, matches);
+            AlarmGrades.record(this, occurrence, problem, matches);
             correct = matches;
             solved = true;
             RingSession.end(this, occurrence);

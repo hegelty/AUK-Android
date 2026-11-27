@@ -2,8 +2,18 @@
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="sharedpref" path="ring_session.xml" />
+        <exclude domain="device_sharedpref" path="ring_session.xml" />
+        <exclude domain="device_database" path="pending-alarm-grades.db" />
+        <exclude domain="device_database" path="pending-alarm-grades.db-journal" />
+        <exclude domain="device_database" path="pending-alarm-grades.db-wal" />
+        <exclude domain="device_database" path="pending-alarm-grades.db-shm" />
     </cloud-backup>
     <device-transfer>
         <exclude domain="sharedpref" path="ring_session.xml" />
+        <exclude domain="device_sharedpref" path="ring_session.xml" />
+        <exclude domain="device_database" path="pending-alarm-grades.db" />
+        <exclude domain="device_database" path="pending-alarm-grades.db-journal" />
+        <exclude domain="device_database" path="pending-alarm-grades.db-wal" />
+        <exclude domain="device_database" path="pending-alarm-grades.db-shm" />
     </device-transfer>
 </data-extraction-rules>

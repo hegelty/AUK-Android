@@ -12,6 +12,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.UserManager;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -31,6 +32,8 @@ public class AlarmDeliveryTest {
     @Test
     public void importedAlarmCanRecoverPermissionRescheduleAndRejectReplays() throws Exception {
         Context context = ApplicationProvider.getApplicationContext();
+        UserManager user = context.getSystemService(UserManager.class);
+        shadowOf(user).setUserUnlocked(true);
         ShadowAlarmManager platform = shadowOf(context.getSystemService(AlarmManager.class));
         shadowOf(context.getSystemService(NotificationManager.class)).setNotificationsEnabled(true);
         ShadowAlarmManager.setCanScheduleExactAlarms(false);
@@ -72,8 +75,16 @@ public class AlarmDeliveryTest {
         assertEquals(RingSession.key(valid), RingSession.key(RingSession.current(context)));
         assertEquals(1, platform.getScheduledAlarms().size());
 
-        new AlarmRecoveryReceiver().onReceive(context, new Intent(Intent.ACTION_BOOT_COMPLETED));
+        shadowOf(user).setUserUnlocked(false);
+        new AlarmRecoveryReceiver().onReceive(context, new Intent(Intent.ACTION_LOCKED_BOOT_COMPLETED));
         assertNull(RingSession.current(context));
+        Intent afterBoot = new Intent(shadowOf(platform.peekNextScheduledAlarm().operation).getSavedIntent());
+        new AlarmReceiver().onReceive(context, afterBoot);
+        String ringing = RingSession.key(afterBoot);
+        assertTrue(RingSession.isActive(context, ringing));
+        shadowOf(user).setUserUnlocked(true);
+        new AlarmRecoveryReceiver().onReceive(context, new Intent(Intent.ACTION_BOOT_COMPLETED));
+        assertTrue(RingSession.isActive(context, ringing));
         assertEquals(1, platform.getScheduledAlarms().size());
         alarms.delete(id);
         assertFalse(alarms.hasAlarms());

@@ -29,6 +29,7 @@
             android:exported="false" />
         <activity
             android:name=".Alarm.AlarmActivity"
+            android:directBootAware="true"
             android:excludeFromRecents="true"
             android:taskAffinity="com.unrevr.auk.ringing"
             android:showWhenLocked="true"
@@ -50,11 +51,14 @@
 
         <receiver
             android:name=".Alarm.AlarmReceiver"
+            android:directBootAware="true"
             android:exported="false" />
         <receiver
             android:name=".Alarm.AlarmRecoveryReceiver"
+            android:directBootAware="true"
             android:exported="false">
             <intent-filter>
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
                 <action android:name="android.intent.action.TIME_SET" />
@@ -64,6 +68,7 @@
         </receiver>
         <service
             android:name=".Alarm.AlarmService"
+            android:directBootAware="true"
             android:foregroundServiceType="systemExempted"
             android:exported="false" />
     </application>

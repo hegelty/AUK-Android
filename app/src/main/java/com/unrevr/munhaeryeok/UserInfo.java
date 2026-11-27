@@ -14,6 +14,7 @@ public final class UserInfo {
 
     UserInfo(Context context) {
         this(LearningDatabase.get(context));
+        AlarmGrades.replay(context, this);
     }
 
     UserInfo(LearningDatabase storage) {
@@ -55,6 +56,10 @@ public final class UserInfo {
     }
 
     public void recordAnswer(String occurrenceKey, Problem problem, boolean correct) {
+        recordAnswer(occurrenceKey, problem.problemType, problem.id, correct);
+    }
+
+    void recordAnswer(String occurrenceKey, int type, int problemId, boolean correct) {
         if (occurrenceKey == null || occurrenceKey.isEmpty()) {
             throw new IllegalArgumentException("Missing alarm occurrence");
         }
@@ -70,7 +75,7 @@ public final class UserInfo {
                 db.execSQL("UPDATE profile SET solved = ?, wrong = ?, score = ? WHERE singleton = 1",
                         new Object[]{solved, wrong, scoreAfter(solved, wrong)});
             }
-            if (!correct) LearningDatabase.addMistake(db, problem.problemType, problem.id);
+            if (!correct) LearningDatabase.addMistake(db, type, problemId);
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
