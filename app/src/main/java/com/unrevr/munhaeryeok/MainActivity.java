@@ -1,7 +1,6 @@
 package com.unrevr.munhaeryeok;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
 import android.app.NotificationChannel;
@@ -51,7 +50,7 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends InsetActivity {
     public static Context context;
     private boolean loadDone = false;
 
