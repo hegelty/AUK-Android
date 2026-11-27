@@ -31,6 +31,17 @@ public class AlarmMigrationTest {
         assertEquals("월", alarm.dayLabel());
     }
 
+    @Test public void interruptedRowDoesNotSwallowTheNextGroupOrOccurrence() {
+        String groups = "1|8:0|true|false|broken=2|9:0|false|true|valid|2|true|0,77,0,0,0,0,0,=";
+        String entries = "78-0-1:8:0:0-broken=79-9-3:11:0:0-남은=요일|1|0|1=";
+        LegacyAlarms legacy = new LegacyAlarms(groups, entries);
+        assertEquals(2, legacy.groups.size());
+        assertEquals(2, legacy.groups.get(0).id);
+        assertEquals(9, legacy.groups.get(0).h);
+        assertEquals("남은=요일", legacy.groups.get(1).name);
+        assertEquals(Collections.singleton(9), legacy.requestCodes);
+    }
+
     @Test public void advancesAcrossWeekAtScheduledMinute() {
         AlarmData sunday = new AlarmData(1, 7, 0, 1, true, false, "알람", 1, false);
         ZonedDateTime now = ZonedDateTime.parse("2026-11-29T07:00:00+09:00[Asia/Seoul]");

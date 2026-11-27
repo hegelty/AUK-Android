@@ -8,6 +8,10 @@ import java.util.regex.Pattern;
 
 /** Version 22 stored the visible groups and their platform request codes in separate files. */
 final class LegacyAlarms {
+    private static final Pattern GROUP_BOUNDARY = Pattern.compile(
+            "=(?=[0-9]+\\|[0-9]+:[0-9]+\\|(?:true|false)\\|(?:true|false)\\|)");
+    private static final Pattern ENTRY_BOUNDARY = Pattern.compile(
+            "=(?=[0-9]+-[0-9]+-[1-7]:[0-9]+:[0-9]+:[0-9]+-)");
     private static final Pattern GROUP = Pattern.compile(
             "(?:^|=)([0-9]+)\\|([0-9]+):([0-9]+)\\|(true|false)\\|(true|false)\\|(.*?)"
                     + "\\|([123])\\|(true|false)\\|((?:[0-9]+,){6}[0-9]+,?)(?==|$)", Pattern.DOTALL);
@@ -21,8 +25,9 @@ final class LegacyAlarms {
     LegacyAlarms(String groupFile, String entryFile) {
         Set<Integer> groupedEntries = new HashSet<>();
         Set<Integer> groupIds = new HashSet<>();
-        Matcher group = GROUP.matcher(groupFile.trim());
-        while (group.find()) {
+        for (String record : GROUP_BOUNDARY.split(groupFile.trim())) {
+            Matcher group = GROUP.matcher(record);
+            if (!group.lookingAt()) continue;
             try {
                 int id = number(group, 1);
                 if (id <= 0 || groupIds.contains(id)) continue;
@@ -45,8 +50,9 @@ final class LegacyAlarms {
                 // A partial row cannot prevent recovery of the remaining groups and individual days.
             }
         }
-        Matcher entry = ENTRY.matcher(entryFile.trim());
-        while (entry.find()) {
+        for (String record : ENTRY_BOUNDARY.split(entryFile.trim())) {
+            Matcher entry = ENTRY.matcher(record);
+            if (!entry.lookingAt()) continue;
             try {
                 int code = number(entry, 2);
                 if (code != 0) requestCodes.add(code);
