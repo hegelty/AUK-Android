@@ -1,166 +1,60 @@
 package com.unrevr.munhaeryeok.Alarm;
 
-import android.app.AlarmManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.unrevr.munhaeryeok.DataController;
 import com.unrevr.munhaeryeok.R;
 
-import java.util.ArrayList;
+import java.util.List;
 
-public class AlarmListAdapter extends RecyclerView.Adapter<AlarmListAdapter.ViewHolder> implements Filterable {
-    private ArrayList<AlarmData> alarmItems;
-    private ArrayList<AlarmData> alarmItemsFull;
-
-    @Override
-    public Filter getFilter() {
-        return new Filter() {
-            @Override
-            protected FilterResults performFiltering(CharSequence charSequence) {
-                String query = charSequence.toString();
-                if(query.equals("0")) {
-                    alarmItems = alarmItemsFull;
-                    Log.d("AlarmListAdapter", "0");
-                } else {
-                    alarmItemsFull = alarmItems;
-                    ArrayList<AlarmData> filteredList = new ArrayList<>();
-                    for(AlarmData alarmData : alarmItems) {
-                        if(alarmData.favorite) {
-                            filteredList.add(alarmData);
-                        }
-                    }
-                    alarmItems = filteredList;
-                }
-                FilterResults filterResults = new FilterResults();
-                filterResults.values = alarmItems;
-                return filterResults;
-            }
-
-            @Override
-            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-                alarmItems = (ArrayList<AlarmData>) filterResults.values;
-                notifyDataSetChanged();
-            }
-        };
+final class AlarmListAdapter extends RecyclerView.Adapter<AlarmListAdapter.ViewHolder> {
+    interface Actions {
+        void edit(int id);
+        void setFavorite(int id, boolean favorite);
     }
 
-    // onclick listener
-    public interface OnItemClickListener {
-        void onItemClick(View v, int position);
-    }
-    private OnItemClickListener onItemClickListener;
-    public void setOnItemClickListener(OnItemClickListener listener) {
-        this.onItemClickListener = listener;
-    }
+    private final List<AlarmData> alarms;
+    private final Actions actions;
 
-    // adaptor
-    AlarmListAdapter(ArrayList<AlarmData> alarmItems) {
-        this.alarmItems = alarmItems;
-        alarmItemsFull = alarmItems;
+    AlarmListAdapter(List<AlarmData> alarms, Actions actions) {
+        this.alarms = alarms;
+        this.actions = actions;
     }
 
-    @NonNull
-    @Override
-    public AlarmListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.alarm_list_item, parent, false);
-        return new ViewHolder(view);
+    @NonNull @Override public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.alarm_list_item, parent, false));
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull AlarmListAdapter.ViewHolder holder, int position) {
-        holder.onBind(alarmItems.get(position));
+    @Override public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        AlarmData alarm = alarms.get(position);
+        holder.name.setText(alarm.name);
+        holder.time.setText(alarm.timeLabel());
+        holder.ampm.setText(alarm.h >= 12 ? "PM" : "AM");
+        holder.days.setText(alarm.dayLabel());
+        holder.favorite.setChecked(alarm.favorite);
+        holder.favorite.setOnClickListener(v -> actions.setFavorite(alarm.id, holder.favorite.isChecked()));
+        holder.itemView.setOnClickListener(v -> actions.edit(alarm.id));
     }
 
-    @Override
-    public int getItemCount() {
-        return alarmItems.size();
-    }
+    @Override public int getItemCount() { return alarms.size(); }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
-        TextView nameTextView;
-        TextView timeTextView;
-        TextView amfmTextView;
-        TextView dayTextView;
-        CheckBox favoriteCheckBox;
-        public ViewHolder(@NonNull View parent) {
-            super(parent);
+    static final class ViewHolder extends RecyclerView.ViewHolder {
+        final TextView name, time, ampm, days;
+        final CheckBox favorite;
 
-            nameTextView = itemView.findViewById(R.id.problemTitle);
-            timeTextView = itemView.findViewById(R.id.problemTextView);
-            amfmTextView = itemView.findViewById(R.id.amfmTextView);
-            favoriteCheckBox = itemView.findViewById(R.id.favoriteCheckBox);
-            dayTextView = itemView.findViewById(R.id.answerTextView);
-
-            parent.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    if(onItemClickListener != null) {
-                        onItemClickListener.onItemClick(v, position);
-                    }
-                }
-            });
-
-            favoriteCheckBox.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    AlarmData alarmData = alarmItems.get(position);
-                    alarmData.favorite = !alarmData.favorite;
-
-                    DataController dataCon = new DataController(v.getContext(), "alarm_data");
-                    String original = dataCon.getString("alarms_list", "").trim();
-                    String[] list = original.split("=");
-                    String new_list = "";
-                    for(String s : list) {
-                        if(Integer.parseInt(s.split("\\|")[0]) != alarmData.id) {
-                            new_list += s + "=";
-                        } else {
-                            new_list += alarmData.toString() + "=";
-                        }
-                    }
-                    original = new_list;
-                    dataCon.putString("alarms_list", original);
-                }
-            });
-        }
-
-        void onBind(AlarmData alarmData) {
-            nameTextView.setText(alarmData.name);
-            int h = alarmData.h;
-            if (h >= 12) {
-                amfmTextView.setText("PM");
-                if(h==12) {
-                    timeTextView.setText("12:" + String.format("%02d",alarmData.m));
-                } else {
-                    timeTextView.setText(String.format("%02d",alarmData.h%12) + ": " + String.format("%02d",alarmData.m));
-                }
-            } else {
-                amfmTextView.setText("AM");
-                if(h==0) {
-                    timeTextView.setText("12:" + String.format("%02d",alarmData.m));
-                } else {
-                    timeTextView.setText(String.format("%02d",alarmData.h) + ":" + String.format("%02d",alarmData.m));
-                }
-            }
-            String days = "";
-            String[] day = {"일", "월", "화", "수", "목", "금", "토"};
-            for(int i=0;i<7;i++) {
-                if(alarmData.alarm_ids[i]!=0) {
-                    if(days=="") days = day[i];
-                    else days = days + ", " + day[i];
-                }
-            }
-            dayTextView.setText(days);
-            favoriteCheckBox.setChecked(alarmData.favorite);
+        ViewHolder(View row) {
+            super(row);
+            name = row.findViewById(R.id.problemTitle);
+            time = row.findViewById(R.id.problemTextView);
+            ampm = row.findViewById(R.id.amfmTextView);
+            days = row.findViewById(R.id.answerTextView);
+            favorite = row.findViewById(R.id.favoriteCheckBox);
         }
     }
 }

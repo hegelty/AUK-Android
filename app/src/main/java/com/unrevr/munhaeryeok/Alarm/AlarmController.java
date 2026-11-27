@@ -1,298 +1,211 @@
 package com.unrevr.munhaeryeok.Alarm;
 
-import static android.content.Context.ALARM_SERVICE;
-
 import android.app.AlarmManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 
-import com.unrevr.munhaeryeok.DataController;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.ArrayList;
 
-import java.util.Calendar;
-
-
-public class AlarmController {
-    private Context context;
-    DataController dataCon;
+public final class AlarmController {
+    static final String RING_CHANNEL = "ringing_alarms_v2";
+    private static final String ACTION_RING = "com.unrevr.auk.RING";
+    private static final String[] COLUMNS = {"id", "hour", "minute", "days", "sound", "vibration",
+            "name", "problem", "favorite", "due", "token"};
+    private final Context context;
+    private final SQLiteDatabase db;
+    private final AlarmManager manager;
 
     public AlarmController(Context context) {
-        this.context = context;
-        this.dataCon  = new DataController(context, "alarm");
+        this.context = context.getApplicationContext();
+        db = AlarmDatabase.get(this.context).getWritableDatabase();
+        manager = context.getSystemService(AlarmManager.class);
     }
 
-    public int setAlarm(Alarm alarm) {
-        return setAlarm(alarm.d, alarm.h, alarm.m, alarm.s, alarm.id, alarm.sound, alarm.vibration, alarm.name, alarm.problem_type);
+    boolean exactAllowed() {
+        return Build.VERSION.SDK_INT < 31 || manager.canScheduleExactAlarms();
     }
-    public int setAlarm(int d, int h, int m, int s, int id, boolean sound, boolean vibration, String name, int problem_type) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.DAY_OF_WEEK, d);
-        calendar.set(Calendar.HOUR_OF_DAY, h);
-        calendar.set(Calendar.MINUTE, m);
-        calendar.set(Calendar.SECOND, s);
 
-        int alarm_id = createAlarmID();
-        if(calendar.compareTo(Calendar.getInstance()) < 0) calendar.add(Calendar.DATE, 7);
+    boolean notificationsAllowed() {
+        NotificationManager notifications = context.getSystemService(NotificationManager.class);
+        NotificationChannel channel = notifications.getNotificationChannel(RING_CHANNEL);
+        return notifications.areNotificationsEnabled()
+                && (channel == null || channel.getImportance() != NotificationManager.IMPORTANCE_NONE);
+    }
 
-        Log.d("setAlarm", "id: " + id + ", alarm_id: " + alarm_id + ", h: " + h + ", m: " + m + ", sound: " + sound + ", vibration: " + vibration + ", name: " + name + ", problem_type: " + problem_type);
+    public boolean canRing() {
+        return exactAllowed() && notificationsAllowed();
+    }
 
-        Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.putExtra("id", id);
-        intent.putExtra("alarm_id", alarm_id);
-        intent.putExtra("h", h);
-        intent.putExtra("m", m);
-        intent.putExtra("sound", sound);
-        intent.putExtra("vibration", vibration);
-        intent.putExtra("name", name);
-        intent.putExtra("problem_type", problem_type);
+    private static AlarmData read(Cursor c) {
+        return new AlarmData(c.getInt(0), c.getInt(1), c.getInt(2), c.getInt(3),
+                c.getInt(4) != 0, c.getInt(5) != 0, c.getString(6), c.getInt(7), c.getInt(8) != 0);
+    }
 
-        PendingIntent pendingIntent =
-                PendingIntent.getBroadcast(
-                        context,
-                        alarm_id,
-                        intent,
-                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    private Cursor byId(int id) {
+        return db.query("alarms", COLUMNS, "id=?", new String[]{Integer.toString(id)}, null, null, null);
+    }
 
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
-        alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                calendar.getTimeInMillis(),
-                pendingIntent
-        );
+    AlarmData get(int id) {
+        try (Cursor c = byId(id)) {
+            return c.moveToFirst() ? read(c) : null;
+        }
+    }
 
-        Alarm alarm = new Alarm(id, d, h, m, s, sound, vibration, name, problem_type);
-        alarm.setAlarmId(alarm_id);
-        saveAlarmId(id, alarm_id);
+    ArrayList<AlarmData> list(boolean favoritesOnly) {
+        ArrayList<AlarmData> rows = new ArrayList<>();
+        try (Cursor c = db.query("alarms", COLUMNS, favoritesOnly ? "favorite=1" : null, null,
+                null, null, "id")) {
+            while (c.moveToNext()) rows.add(read(c));
+        }
+        return rows;
+    }
 
+    public AlarmData nearest() {
+        if (!canRing()) return null;
+        try (Cursor c = db.query("alarms", COLUMNS, "due>0", null, null, null, "due,id", "1")) {
+            return c.moveToFirst() ? read(c) : null;
+        }
+    }
+
+    public boolean hasAlarms() {
+        try (Cursor c = db.rawQuery("SELECT 1 FROM alarms LIMIT 1", null)) {
+            return c.moveToFirst();
+        }
+    }
+
+    int save(AlarmData alarm) {
+        int id = alarm.id;
+        db.beginTransaction();
+        try {
+            ContentValues values = AlarmDatabase.values(alarm);
+            if (id == 0) {
+                id = Math.toIntExact(db.insertOrThrow("alarms", null, values));
+            } else {
+                // Invalidate a delivery already queued for the previous configuration.
+                values.put("due", 0);
+                if (db.update("alarms", values, "id=?", new String[]{Integer.toString(id)}) == 0)
+                    throw new IllegalStateException("삭제된 알람입니다.");
+            }
+            try (Cursor row = byId(id)) {
+                if (row.moveToFirst()) schedule(row, System.currentTimeMillis(), canRing(), false, true);
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
         return id;
     }
 
+    void delete(int id) {
+        db.delete("alarms", "id=?", new String[]{Integer.toString(id)});
+        cancel(new Intent(context, AlarmReceiver.class).setAction(ACTION_RING), id);
+    }
+
+    void setFavorite(int id, boolean favorite) {
+        ContentValues values = new ContentValues();
+        values.put("favorite", favorite);
+        db.update("alarms", values, "id=?", new String[]{Integer.toString(id)});
+    }
+
+    private void cancel(Intent intent, int code) {
+        PendingIntent previous = PendingIntent.getBroadcast(context, code, intent,
+                PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
+        if (previous != null) {
+            manager.cancel(previous);
+            previous.cancel();
+        }
+    }
+
+    /** Rebuild platform alarms from the durable schedule (including after reboot or a permission change). */
     public void reloadAlarms() {
-        String original = dataCon.getString("alarm_list", "").trim();
-        Log.d("reloadAlarms", original);
-        String[] list = original.split("=");
-        String new_list = "";
-        for(String s : list) {
-            try {
-                Alarm alarm = new Alarm(s);
-                if (alarm.alarm_id != 0) {
-                    cancelAlarm(alarm.alarm_id);
-                    alarm.setAlarmId(0);
-                    new_list += alarm.toString() + "=";
-                }
-                else new_list += s + "=";
-            } catch(Exception e) {
-                new_list += s + "=";
-            }
-        }
-
-        dataCon.putString("alarm_list", new_list);
-        setNearestAlarm();
+        reconcile(true);
     }
 
-    int createID() {
-        int id = dataCon.getInt("last_id", 0);
-        dataCon.putInt("last_id", id + 1);
-        return Integer.parseInt((id + 1) + Long.toString(System.currentTimeMillis()).substring(8));
+    public void refreshAlarms() {
+        reconcile(false);
     }
 
-    int createAlarmID() {
-        int id = dataCon.getInt("last_alarm_id", 0);
-        dataCon.putInt("last_alarm_id", id + 1);
-        return Integer.parseInt((id + 1) + Long.toString(System.currentTimeMillis()).substring(8));
-    }
-
-    int saveAlarm(Alarm alarm) {
-        String original = dataCon.getString("alarm_list", "").trim();
-        Log.d("saveAlarm", "saveAlarm Original: " + original + alarm.toString() + "=");
-        dataCon.putString("alarm_list", original + alarm.toString() + "=");
-        return alarm.id;
-    }
-
-    int saveAlarm(int d, int h, int m, int s, boolean sound, boolean vibration, String name, int problem_type) {
-        Alarm alarm = new Alarm(createID(), d, h, m, s, sound, vibration, name, problem_type);
-        return saveAlarm(alarm);
-    }
-
-    void saveAlarmId(int id, int alarm_id) {
-        String original = dataCon.getString("alarm_list", "").trim();
-        String[] list = original.split("=");
-        String new_list = "";
-        for(String s : list) {
-            s = s.trim();
-            if(s.equals("")) continue;
-            Alarm alarm = new Alarm(s);
-            if(alarm.id == id) {
-                alarm.setAlarmId(alarm_id);
-                new_list += alarm.toString() + "=";
-                continue;
-            }
-            new_list += s + "=";
-        }
-        dataCon.putString("alarm_list", new_list);
-    }
-
-    public boolean deleteAlarm(int id) {
-        Log.d("deleteAlarm", "deleteAlarm: " + id);
-        
-        Alarm alarm = getAlarm(id); // 이게 앞에 있어야 dataCon에서 지워도 문제 없음
-
-        String original = dataCon.getString("alarm_list", "").trim();
-        Log.d("deleteAlarm", "deleteAlarm Original: " + original);
-        String[] list = original.split("=");
-        String new_list = "";
-        for(String s : list) {
-            s = s.trim();
-            if(s.equals("")) continue;
-            if(Integer.parseInt(s.split("-")[0]) == id) continue;
-            if(s!=null) new_list += s + "=";
-        }
-        dataCon.putString("alarm_list", new_list);
-
-        Log.d("deleteAlarm", "deleteAlarm: " + alarm.toString());
-
-        if(alarm.alarm_id != 0) cancelAlarm(alarm.alarm_id);
-        reloadAlarms();
-        return true;
-    }
-
-    public void cancelAlarm(int alarm_id) {
-        Intent intent = new Intent(context, AlarmReceiver.class);
-
-        PendingIntent pendingIntent = // 등록했을 때의 인텐트랑 같아야 삭제됨
-                PendingIntent.getBroadcast(
-                        context,
-                        alarm_id,
-                        intent,
-                        PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
-        if (pendingIntent != null) {
-            AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
-            alarmManager.cancel(pendingIntent);
-        }
-    }
-
-    public Alarm getAlarm(int id) {
-        String original = dataCon.getString("alarm_list", "").trim();
-        Log.d("getAlarm", "getAlarm: " + original);
-        String[] list = original.split("=");
-        for(String s : list) {
-            s = s.trim();
-            if(s.equals("")) continue;
-            String[] time = s.split("-");
-            if(Integer.parseInt(time[0]) == id) {
-                return new Alarm(s);
-            }
-        }
-        return null;
-    }
-
-    public int getNearestAlarmId() {
-        String original = dataCon.getString("alarm_list", "").trim();
-        if(original.equals("")) return 0;
-        Log.d("getNearestAlarm", "getNearestAlarm original: " + original);
-        String[] list = original.split("=");
-        String nearest = "";
-        Calendar nearestCal = null;
-        for(String s : list) {
-            s = s.trim();
-            Log.d("getNearestAlarm", "getNearestAlarm: " + s);
-            if(s.equals("")) continue;
-            try {
-                String[] time = s.split("-")[2].split(":");
-                int d = Integer.parseInt(time[0]);
-                int h = Integer.parseInt(time[1]);
-                int m = Integer.parseInt(time[2]);
-                Calendar calendar = Calendar.getInstance();
-                calendar.set(Calendar.DAY_OF_WEEK, d);
-                calendar.set(Calendar.HOUR_OF_DAY, h);
-                calendar.set(Calendar.MINUTE, m);
-                calendar.set(Calendar.SECOND, 0);
-                if (calendar.compareTo(Calendar.getInstance()) < 0) calendar.add(Calendar.DATE, 7);
-                Log.d("getNearestAlarm", "getNearestAlarm: " + calendar.get(Calendar.DAY_OF_WEEK) + ", " + calendar.get(Calendar.HOUR_OF_DAY) + ", " + calendar.get(Calendar.MINUTE) + ", " + calendar.get(Calendar.SECOND));
-                if (nearestCal == null || calendar.compareTo(nearestCal) < 0) {
-                    nearest = s;
-                    nearestCal = calendar;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        Log.d("getNearestAlarm", "NearestAlarm: " + nearest);
+    private void reconcile(boolean force) {
+        db.beginTransaction();
         try {
-            return Integer.parseInt(nearest.split("-")[0]);
-        } catch (Exception e) {
-            return 0;
+            try (Cursor codes = db.rawQuery("SELECT code FROM legacy_requests", null)) {
+                while (codes.moveToNext()) cancel(new Intent(context, AlarmReceiver.class), codes.getInt(0));
+            }
+            db.delete("legacy_requests", null, null);
+            // Snapshot IDs before updating so large databases aren't re-queried mid-iteration.
+            ArrayList<Integer> ids = new ArrayList<>();
+            try (Cursor rows = db.rawQuery("SELECT id FROM alarms", null)) {
+                while (rows.moveToNext()) ids.add(rows.getInt(0));
+            }
+            long now = System.currentTimeMillis();
+            boolean allowed = canRing();
+            for (int id : ids) {
+                try (Cursor c = byId(id)) {
+                    if (c.moveToFirst()) schedule(c, now, allowed, true, force);
+                }
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
         }
     }
 
-    public void setNearestAlarm() {
-        Alarm alarm = getAlarm(getNearestAlarmId());
-        if(alarm == null) return;
-
-        setAlarm(alarm);
-    }
-}
-
-class Alarm {
-    public int id, alarm_id = 0;
-    public String time;
-    public boolean sound;
-    public boolean vibration;
-    public int d, h, m, s;
-    public String name;
-    public int problem_type;
-
-    public Alarm(int id, String time, boolean sound, boolean vibrate, String name, int problem_type) {
-        this.id = id;
-        this.time = time;
-        this.sound = sound;
-        this.vibration = vibrate;
-        this.name = name;
-        this.problem_type = problem_type;
-        String[] t = time.split(":");
-        this.d = Integer.parseInt(t[0]);
-        this.h = Integer.parseInt(t[1]);
-        this.m = Integer.parseInt(t[2]);
-        this.s = Integer.parseInt(t[3]);
+    /** Claim a specific delivery once and persist the following occurrence before presenting it. */
+    public boolean consumeOccurrence(int id, int occurrenceId) {
+        db.beginTransaction();
+        try (Cursor c = byId(id)) {
+            if (!c.moveToFirst() || occurrenceId == 0 || occurrenceId != c.getInt(10) || c.getLong(9) == 0)
+                return false;
+            boolean allowed = canRing();
+            schedule(c, Math.max(System.currentTimeMillis(), c.getLong(9)), allowed, false, true);
+            db.setTransactionSuccessful();
+            return allowed;
+        } finally {
+            db.endTransaction();
+        }
     }
 
-    public Alarm(int id, int d, int h, int m, int s, boolean sound, boolean vibrate, String name, int problem_type) {
-        this.id = id;
-        this.d = d;
-        this.h = h;
-        this.m = m;
-        this.s = s;
-        this.sound = sound;
-        this.vibration = vibrate;
-        this.name = name;
-        this.problem_type = problem_type;
-        this.time = d + ":" + h + ":" + m + ":" + s;
-    }
-
-    public Alarm(String s) {
-        Log.d("Alarm", "Alarm: " + s);
-        String[] t = s.split("-");
-        this.id = Integer.parseInt(t[0]);
-        this.alarm_id = Integer.parseInt(t[1]);
-        this.time = t[2];
-        String[] tt = time.split(":");
-        this.d = Integer.parseInt(tt[0]);
-        this.h = Integer.parseInt(tt[1]);
-        this.m = Integer.parseInt(tt[2]);
-        this.s = Integer.parseInt(tt[3]);
-        String[] ttt = t[3].split("\\|");
-        this.name = ttt[0];
-        this.sound = Integer.parseInt(ttt[1]) == 1;
-        this.vibration = Integer.parseInt(ttt[2]) == 1;
-        this.problem_type = Integer.parseInt(ttt[3]);
-    }
-
-    public void setAlarmId(int alarm_id) {
-        this.alarm_id = alarm_id;
-    }
-
-    public String toString() {
-        return id + "-" + alarm_id + "-" + time + "-" + name + "|" + (sound ? "1" : "0") + "|" + (vibration ? "1" : "0") + "|" + problem_type;
+    private void schedule(Cursor row, long after, boolean allowed, boolean restoring, boolean force) {
+        AlarmData alarm = read(row);
+        Intent ring = new Intent(context, AlarmReceiver.class).setAction(ACTION_RING);
+        int token = row.getInt(10);
+        long due = 0;
+        if (allowed) {
+            due = alarm.nextAfter(Instant.ofEpochMilli(after).atZone(ZoneId.systemDefault()));
+            // A foreground refresh can race delivery in the same second. Keep its token
+            // and let the receiver claim the due occurrence exactly once.
+            long previousDue = row.getLong(9);
+            if (restoring && previousDue <= after && previousDue > after - 60_000) due = previousDue;
+            // A restored database can contain future due times without any platform intents.
+            if (!force && due == previousDue && PendingIntent.getBroadcast(context, alarm.id, ring,
+                    PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE) != null) return;
+            if (due != previousDue) token = token == Integer.MAX_VALUE ? 1 : token + 1;
+            ring.putExtra("id", alarm.id).putExtra("alarm_id", token)
+                    .putExtra("h", alarm.h).putExtra("m", alarm.m).putExtra("name", alarm.name)
+                    .putExtra("sound", alarm.sound).putExtra("vibration", alarm.vibration)
+                    .putExtra("problem_type", alarm.problemType);
+            PendingIntent delivery = PendingIntent.getBroadcast(context, alarm.id, ring,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            Intent edit = new Intent(context, AlarmSettingActivity.class).putExtra("id", alarm.id);
+            PendingIntent show = PendingIntent.getActivity(context, alarm.id, edit,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            try {
+                manager.setAlarmClock(new AlarmManager.AlarmClockInfo(due, show), delivery);
+            } catch (SecurityException revokedWhileScheduling) {
+                due = 0;
+            }
+        }
+        if (due == 0 && !force && row.getLong(9) == 0) return;
+        if (due == 0) cancel(ring, alarm.id);
+        db.execSQL("UPDATE alarms SET due=?, token=? WHERE id=?", new Object[]{due, token, alarm.id});
     }
 }
