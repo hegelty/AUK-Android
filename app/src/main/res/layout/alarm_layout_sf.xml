@@ -1,152 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
-    tools:context=".Alarm.AlarmActivity">
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:padding="16dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <include layout="@layout/alarm_quiz_heading" />
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="15dp"
-            android:layout_marginEnd="15dp">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/problemTextView"
-                android:layout_width="match_parent"
+            <EditText
+                android:id="@+id/answerEditText"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="7:00"
-                android:textAlignment="center"
-                android:textColor="@color/black"
-                android:textSize="54sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.1" />
-
-            <TextView
-                android:id="@+id/AMPMTextView"
-                android:layout_width="411dp"
-                android:layout_height="40dp"
-                android:layout_marginTop="-10dp"
-                android:text="AM"
-                android:textAlignment="center"
-                android:textColor="@color/black"
-                android:textSize="30sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/problemTextView"
-                app:layout_constraintVertical_bias="0.0" />
-
-            <TextView
-                android:id="@+id/questionTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Q. 주관식 문제입니다. ㅁㅇ리낭머라ㅣㄴㅇ러ㅣㅏㄴㅁㅇ러ㅏㅣㄴ어라ㅣㅇ린ㅇㄹㄴ마ㅣ런아ㅓㅁㅇ러ㅏㅣㅇㅁㄴ러미나러이"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.35" />
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <EditText
-                    android:id="@+id/answerEditText"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginEnd="4dp"
-                    android:background="@drawable/round_corner_white"
-                    android:elevation="4dp"
-                    android:ems="10"
-                    android:hint="정답"
-                    android:inputType="text"
-                    android:paddingStart="10dp"
-                    android:textColor="@color/tblack"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/submitButton"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <ImageButton
-                    android:id="@+id/submitButton"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="@null"
-                    android:src="@drawable/iconmonstr_check_mark_circle_filled"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="1.0"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    android:scaleType="fitCenter" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <TextView
-                android:id="@+id/hintTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="힌트: 대충 문제 힌트(한 번 틀리면)"
-                android:textColor="@color/black"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.85" />
-
-            <TextView
-                android:id="@+id/coolDownTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/black"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.90" />
-
-            <Button
-                android:id="@+id/closeButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
                 android:layout_weight="1"
-                android:background="@drawable/round_corner_black"
-                android:paddingStart="15dp"
-                android:text="알람 끄기"
-                android:textAlignment="textStart"
-                android:textColor="@color/white"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="1.0" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                android:minHeight="48dp"
+                android:background="@drawable/round_corner_white"
+                android:hint="@string/quiz_answer"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="@color/black" />
 
+            <ImageButton
+                android:id="@+id/submitButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/submit_quiz_answer"
+                android:src="@drawable/iconmonstr_check_mark_circle_filled" />
+        </LinearLayout>
+
+        <include layout="@layout/alarm_quiz_feedback" />
     </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
