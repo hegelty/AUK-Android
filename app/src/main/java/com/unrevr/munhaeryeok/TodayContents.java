@@ -39,7 +39,7 @@ final class TodayContents {
     }
 
     private static TodayContents request(int index) throws IOException, JSONException, URISyntaxException {
-        String body = Jsoup.connect("https://auk.hegelty.space/column")
+        String body = Jsoup.connect(ApiEndpoints.COLUMN)
                 .data("id", Integer.toString(index))
                 .timeout(8000)
                 .ignoreContentType(true)

@@ -42,7 +42,7 @@ final class ScoreSharing {
                 SharedPreferences prefs = preferences(app);
                 if (!isEnabled(app) || today.equals(prefs.getString("date", ""))) return;
 
-                String result = Jsoup.connect("https://auk.hegelty.space/upload_score")
+                String result = Jsoup.connect(ApiEndpoints.UPLOAD_SCORE)
                         .timeout(8000)
                         .followRedirects(false)
                         .method(Connection.Method.POST)
