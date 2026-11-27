@@ -41,6 +41,8 @@ public class LearningMigrationTest {
             try (LearningDatabase reopened = new LearningDatabase(context, dbName, legacy)) {
                 UserInfo user = new UserInfo(reopened);
                 user.recordAnswer("alarm:1", first, true);
+                assertTrue(user.isGraded("alarm:1"));
+                assertFalse(user.isGraded("alarm:2"));
                 user.recordAnswer("alarm:2", first, true);
                 user.getUserInfo();
                 assertEquals("existing-installation", user.id);

@@ -21,6 +21,14 @@ public class RingSessionTest {
     }
 
     @Test
+    public void processDeathAfterGradingSkipsThePersistedHead() {
+        RingSession.enqueue(context, new Intent().putExtra("id", 10).putExtra("alarm_id", 5));
+        RingSession.enqueue(context, new Intent().putExtra("id", 11).putExtra("alarm_id", 2));
+        assertEquals("11/2", RingSession.key(RingSession.nextUngraded(context, "10/5"::equals)));
+        assertNull(RingSession.nextUngraded(context, "11/2"::equals));
+    }
+
+    @Test
     public void simultaneousDeliveriesRemainDistinctAndGradeInArrivalOrder() {
         Intent first = new Intent("com.unrevr.auk.RING").putExtra("id", 10).putExtra("alarm_id", 1);
         Intent second = new Intent("com.unrevr.auk.RING").putExtra("id", 11).putExtra("alarm_id", 1)

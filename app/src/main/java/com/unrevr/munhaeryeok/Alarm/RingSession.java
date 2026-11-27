@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.net.URISyntaxException;
+import java.util.function.Predicate;
 
 /** The receiver, activity, and service access this queue on the main thread. */
 final class RingSession {
@@ -57,6 +58,15 @@ final class RingSession {
     static Intent current(Context context) {
         JSONArray events = queue(state(context));
         return events.length() == 0 ? null : intentAt(events, 0);
+    }
+
+    static Intent nextUngraded(Context context, Predicate<String> graded) {
+        Intent head = current(context);
+        while (head != null && graded.test(key(head))) {
+            end(context, key(head));
+            head = current(context);
+        }
+        return head;
     }
 
     static boolean isActive(Context context, String occurrence) {

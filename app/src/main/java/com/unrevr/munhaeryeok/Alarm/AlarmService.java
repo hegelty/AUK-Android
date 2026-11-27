@@ -21,6 +21,7 @@ import android.os.Vibrator;
 import android.util.Log;
 
 import com.unrevr.munhaeryeok.R;
+import com.unrevr.munhaeryeok.UserInfo;
 
 import java.util.concurrent.TimeUnit;
 
@@ -50,11 +51,32 @@ public class AlarmService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        NotificationManager notifications = getSystemService(NotificationManager.class);
+        if (playing == null) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
+                    getString(R.string.ringing_channel), NotificationManager.IMPORTANCE_HIGH);
+            channel.setSound(null, null);
+            channel.enableVibration(false);
+            notifications.createNotificationChannel(channel);
+
+            // Even an expired/revoked delivery must satisfy startForegroundService's deadline.
+            Notification.Builder starting = new Notification.Builder(this, CHANNEL_ID)
+                    .setSmallIcon(R.mipmap.ic_launcher).setContentTitle(getString(R.string.ringing_channel));
+            if (Build.VERSION.SDK_INT >= 31) starting.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_DEFERRED);
+            try {
+                startForeground(-1, starting.build());
+            } catch (SecurityException | IllegalStateException e) {
+                Log.w("AlarmService", "Foreground alarm unavailable", e);
+                RingSession.state(this).edit().clear().apply();
+                stopSelf();
+                return START_NOT_STICKY;
+            }
+        }
         return ringNext() ? START_REDELIVER_INTENT : START_NOT_STICKY;
     }
 
     private boolean ringNext() {
-        Intent intent = RingSession.current(this);
+        Intent intent = RingSession.nextUngraded(this, UserInfo.getInstance(this)::isGraded);
         String occurrence = RingSession.key(intent);
         if (occurrence == null) {
             releaseOutputs();
@@ -63,14 +85,7 @@ public class AlarmService extends Service {
         }
         if (occurrence.equals(playing)) return true;
         releaseOutputs();
-
         NotificationManager notifications = getSystemService(NotificationManager.class);
-        NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-                getString(R.string.ringing_channel), NotificationManager.IMPORTANCE_HIGH);
-        // Ring and vibrate according to the individual alarm's selections.
-        channel.setSound(null, null);
-        channel.enableVibration(false);
-        notifications.createNotificationChannel(channel);
         long elapsed = SystemClock.elapsedRealtime() - RingSession.state(this).getLong("started_at", 0);
         long remaining = MAX_RING_MS - elapsed;
         if (elapsed < 0 || remaining <= 0) {

@@ -47,6 +47,13 @@ public final class UserInfo {
         return problems;
     }
 
+    public boolean isGraded(String key) {
+        try (Cursor row = storage.getReadableDatabase().rawQuery(
+                "SELECT 1 FROM graded WHERE occurrence = ?", new String[]{key})) {
+            return row.moveToFirst();
+        }
+    }
+
     public void recordAnswer(String occurrenceKey, Problem problem, boolean correct) {
         if (occurrenceKey == null || occurrenceKey.isEmpty()) {
             throw new IllegalArgumentException("Missing alarm occurrence");
@@ -54,10 +61,7 @@ public final class UserInfo {
         SQLiteDatabase db = storage.getWritableDatabase();
         db.beginTransaction();
         try {
-            try (Cursor previous = db.rawQuery("SELECT 1 FROM graded WHERE occurrence = ?",
-                    new String[]{occurrenceKey})) {
-                if (previous.moveToFirst()) return;
-            }
+            if (isGraded(occurrenceKey)) return;
             db.execSQL("INSERT INTO graded VALUES (?)", new Object[]{occurrenceKey});
             try (Cursor row = db.rawQuery("SELECT solved, wrong FROM profile WHERE singleton = 1", null)) {
                 row.moveToFirst();

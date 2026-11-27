@@ -60,6 +60,11 @@ public class AlarmActivity extends InsetActivity {
         Intent intent = getIntent();
         occurrence = RingSession.key(intent);
         solved = saved != null && saved.getBoolean("solved");
+        if (!solved && RingSession.isActive(this, occurrence)
+                && UserInfo.getInstance(this).isGraded(occurrence)) {
+            RingSession.end(this, occurrence);
+            startService(new Intent(this, AlarmService.class));
+        }
         if (!solved && !RingSession.isActive(this, occurrence)) {
             finish();
             return;
