@@ -46,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
 
         checkFirstRun();
         updateAppIfAvailable();
-        reloadAlarms();
 
         findViewById(R.id.upcommingAlarm).setOnClickListener(v -> {
             Intent intent = new Intent(getApplicationContext(), AlarmListActivity.class);
@@ -249,11 +248,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (ActivityNotFoundException e) {
             Toast.makeText(this, R.string.no_browser, Toast.LENGTH_SHORT).show();
         }
-    }
-
-    void reloadAlarms() {
-        AlarmController alarmController = new AlarmController(getApplicationContext());
-        alarmController.reloadAlarms();
     }
 
     @Override

@@ -28,6 +28,15 @@ android {
     }
 }
 
+// Use the same privacy notice in the APK and on the public policy page.
+def policyAssetDir = layout.buildDirectory.dir('generated/assets/privacy')
+def bundledPolicy = tasks.register('bundlePrivacyPolicy', Sync) {
+    from rootProject.file('privacy.html')
+    into policyAssetDir
+}
+android.sourceSets.main.assets.srcDir(policyAssetDir)
+tasks.named('preBuild') { dependsOn bundledPolicy }
+
 dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.6.1'

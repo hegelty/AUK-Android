@@ -42,11 +42,18 @@ public class SettingActivity extends AppCompatActivity {
                 .setTitle(R.string.privacy_title)
                 .setMessage(getString(R.string.privacy_summary, user.id.trim()))
                 .setPositiveButton(R.string.privacy_full, (d, which) ->
-                        openLink("https://auk.hegelty.space/policy/index.html"))
+                        showPrivacyPolicy())
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
         TextView message = dialog.findViewById(android.R.id.message);
         if (message != null) message.setTextIsSelectable(true);
+    }
+
+    private void showPrivacyPolicy() {
+        Intent intent = new Intent(this, SettingInfoActivity.class);
+        intent.putExtra("title", getString(R.string.privacy_title));
+        intent.putExtra("privacy", true);
+        startActivity(intent);
     }
 
     private void openLink(String url) {
