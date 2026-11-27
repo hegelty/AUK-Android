@@ -103,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        Log.d("uuid", UserInfo.id);
         setTodayContents();
         uploadScore();
 
@@ -384,7 +383,7 @@ public class MainActivity extends AppCompatActivity {
                 backgroundtask = Observable.fromCallable(() -> {
                             String res = Jsoup.connect("https://auk.hegelty.space/upload_score")
                                     .method(Connection.Method.POST)
-                                    .data("id", UserInfo.id.trim())
+                                    .data("id", userInfo.id)
                                     .data("score", String.valueOf(userInfo.score))
                                     .execute()
                                     .body();

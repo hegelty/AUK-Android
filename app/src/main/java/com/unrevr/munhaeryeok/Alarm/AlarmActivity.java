@@ -29,6 +29,7 @@ import com.unrevr.munhaeryeok.UserInfo;
 public class AlarmActivity extends AppCompatActivity {
     int id, h, m, problem_type;
     Problem problem;
+    String gradingKey;
     int cnt = 0;
     boolean solved;
     KeyguardManager keyguardManager;
@@ -66,16 +67,20 @@ public class AlarmActivity extends AppCompatActivity {
 
         // 1: 객관, 2: 주관
         problem_type = intent.getIntExtra("problem_type", 1);
-        int problem_id = intent.getIntExtra("problem_id", 0);
+        gradingKey = intent.getStringExtra("occurrence");
+        if (gradingKey == null) gradingKey = java.util.UUID.randomUUID().toString();
+        if (savedInstanceState != null) gradingKey = savedInstanceState.getString("occurrence", gradingKey);
+        int problem_id = savedInstanceState == null ? intent.getIntExtra("problem_id", -1)
+                : savedInstanceState.getInt("problem_id", -1);
 
         if(problem_type == Problem.MC) {
-            if(problem_id!=0) problem = new Problem(Problem.MC, problem_id);
-            else problem = new Problem(Problem.MC);
+            if (Problem.hasId(this, Problem.MC, problem_id)) problem = Problem.byId(this, Problem.MC, problem_id);
+            else problem = Problem.random(this, Problem.MC);
             setContentView(R.layout.alarm_layout_mc);
         }
         else {
-            if (problem_id != 0) problem = new Problem(Problem.SF, problem_id);
-            else problem = new Problem(Problem.SF);
+            if (Problem.hasId(this, Problem.SF, problem_id)) problem = Problem.byId(this, Problem.SF, problem_id);
+            else problem = Problem.random(this, Problem.SF);
             setContentView(R.layout.alarm_layout_sf);
         }
 
@@ -228,15 +233,22 @@ public class AlarmActivity extends AppCompatActivity {
     }
 
     void addWrongProblem(Problem problem) {
-        UserInfo.getInstance(getApplicationContext()).wrong(problem.id, problem_type);
+        UserInfo.getInstance(getApplicationContext()).recordAnswer(gradingKey, problem, false);
         solved = true;
         stopSound();
     }
 
     void addCorrectProblem(Problem problem) {
-        UserInfo.getInstance(getApplicationContext()).solve();
+        UserInfo.getInstance(getApplicationContext()).recordAnswer(gradingKey, problem, true);
         solved = true;
         stopSound();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        state.putString("occurrence", gradingKey);
+        state.putInt("problem_id", problem.id);
     }
 
     // 강제로 끌때 동작
@@ -247,6 +259,7 @@ public class AlarmActivity extends AppCompatActivity {
             solved = true;
             Intent intent = new Intent(this, AlarmActivity.class);
             intent.putExtra("id", id);
+            intent.putExtra("occurrence", gradingKey);
             intent.putExtra("h", h);
             intent.putExtra("m", m);
             intent.putExtra("problem_id", problem.id);
@@ -267,6 +280,7 @@ public class AlarmActivity extends AppCompatActivity {
             solved = true;
             Intent intent = new Intent(this, AlarmActivity.class);
             intent.putExtra("id", id);
+            intent.putExtra("occurrence", gradingKey);
             intent.putExtra("h", h);
             intent.putExtra("m", m);
             intent.putExtra("problem_id", problem.id);
