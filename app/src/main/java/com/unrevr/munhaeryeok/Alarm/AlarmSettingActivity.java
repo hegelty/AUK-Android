@@ -15,7 +15,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.unrevr.munhaeryeok.InsetActivity;
 
 import com.skydoves.expandablelayout.ExpandableLayout;
 
@@ -24,7 +24,7 @@ import com.unrevr.munhaeryeok.R;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class AlarmSettingActivity extends AppCompatActivity {
+public class AlarmSettingActivity extends InsetActivity {
     int id;
     AlarmController alarms;
     AlarmAccess access;

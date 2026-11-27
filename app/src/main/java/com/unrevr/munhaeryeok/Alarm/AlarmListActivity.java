@@ -4,13 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.unrevr.munhaeryeok.InsetActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.unrevr.munhaeryeok.R;
 
-public class AlarmListActivity extends AppCompatActivity implements AlarmListAdapter.Actions {
+public class AlarmListActivity extends InsetActivity implements AlarmListAdapter.Actions {
     private AlarmController alarms;
     private RecyclerView rows;
     private boolean favorites;
