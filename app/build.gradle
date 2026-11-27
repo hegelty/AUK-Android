@@ -23,6 +23,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    // Run device regressions on Robolectric as well as through AndroidJUnitRunner.
+    sourceSets.test.java.srcDir 'src/androidTest/java'
+    testOptions.unitTests.includeAndroidResources = true
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -38,12 +41,25 @@ def bundledPolicy = tasks.register('bundlePrivacyPolicy', Sync) {
 android.sourceSets.main.assets.srcDir(policyAssetDir)
 tasks.named('preBuild') { dependsOn bundledPolicy }
 
+
+// Android 16's Robolectric runtime requires Java 21.
+tasks.withType(Test).configureEach {
+    // Cold-start migration fixtures must not share application singletons with UI tests.
+    forkEvery = 1
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    systemProperty 'robolectric.dependency.repo.url', 'https://repo.maven.apache.org/maven2'
+}
+
 dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.16.1'
+    testImplementation 'androidx.test.ext:junit:1.3.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     implementation "com.github.skydoves:expandablelayout:1.0.7"
