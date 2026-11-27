@@ -1,6 +1,6 @@
 package com.unrevr.munhaeryeok.Alarm;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.unrevr.munhaeryeok.InsetActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -13,7 +13,7 @@ import com.unrevr.munhaeryeok.UserInfo;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WrongProblemsListActivity extends AppCompatActivity {
+public class WrongProblemsListActivity extends InsetActivity {
     WrongProblemsListAdaptor adapter;
     int problemType = 0;
     @Override
