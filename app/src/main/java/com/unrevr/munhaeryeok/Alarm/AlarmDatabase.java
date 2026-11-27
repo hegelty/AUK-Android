@@ -20,13 +20,13 @@ final class AlarmDatabase extends SQLiteOpenHelper {
     private boolean migratedWhileUnlocked;
 
     static synchronized AlarmDatabase get(Context context) {
-        if (instance == null) instance = new AlarmDatabase(context.getApplicationContext());
+        if (instance == null) instance = new AlarmDatabase(context.getApplicationContext(), DATABASE);
         instance.importAfterUnlock();
         return instance;
     }
 
-    private AlarmDatabase(Context context) {
-        super(context.createDeviceProtectedStorageContext(), DATABASE, null, 1);
+    AlarmDatabase(Context context, String name) {
+        super(context.createDeviceProtectedStorageContext(), name, null, 1);
         credentialContext = context;
     }
 
@@ -41,13 +41,13 @@ final class AlarmDatabase extends SQLiteOpenHelper {
 
     // The scheduler can be opened at LOCKED_BOOT_COMPLETED before credential storage is available.
     // Import only after the first unlock, even when the device database already exists.
-    private void importAfterUnlock() {
+    void importAfterUnlock() {
         if (migratedWhileUnlocked || !credentialContext.getSystemService(UserManager.class).isUserUnlocked()) return;
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         try {
             if (DatabaseUtils.longForQuery(db, "SELECT COUNT(*) FROM import_state WHERE source='credential'", null) == 0) {
-                File oldFile = credentialContext.getDatabasePath(DATABASE);
+                File oldFile = credentialContext.getDatabasePath(getDatabaseName());
                 if (oldFile.exists()) {
                     try (SQLiteDatabase old = SQLiteDatabase.openDatabase(oldFile.getPath(), null, SQLiteDatabase.OPEN_READONLY)) {
                         copyRows(old, db, "alarms");
