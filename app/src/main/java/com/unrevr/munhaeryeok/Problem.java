@@ -1,84 +1,103 @@
 package com.unrevr.munhaeryeok;
 
-import android.util.Log;
+import android.content.Context;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
-public class Problem {
-    public String question;
-    public int problemType;
-    public int id;
-    public String[] mcAnswers;
-    public int mcCorrectAnswer;
-    public String sfAnswer;
-    public String hint;
-    public String solution;
-
+public final class Problem {
     public static final int MC = 1;
     public static final int SF = 2;
 
-    public Problem(int type) {
+    public final int problemType;
+    public final int id;
+    public final String question;
+    public final String[] mcAnswers;
+    public final int mcCorrectAnswer;
+    public final String sfAnswer;
+    public final String hint;
+    public final String solution;
+
+    private static List<Problem> multipleChoice;
+    private static List<Problem> shortForm;
+
+    private Problem(int type, int index, String[] fields) {
         problemType = type;
-        id = 0;
-        if(type == 1) getMCProblem();
-        else if(type == 2) getSFProblem();
+        id = index;
+        question = fields[0];
+        mcAnswers = type == MC ? Arrays.copyOfRange(fields, 1, 5) : null;
+        mcCorrectAnswer = type == MC ? Integer.parseInt(fields[5]) : 0;
+        sfAnswer = type == SF ? fields[1] : null;
+        hint = fields[fields.length - 2];
+        solution = fields[fields.length - 1];
     }
 
-    public Problem(int type, int id) {
-        problemType = type;
-        this.id = id;
-        if(type == 1) getMCProblem();
-        else if(type == 2) getSFProblem();
+    public static Problem random(Context context, int type) {
+        List<Problem> problems = catalog(context, type);
+        return problems.get(ThreadLocalRandom.current().nextInt(problems.size()));
     }
 
-    void getMCProblem() {
-        try {
-            InputStream is = getClass().getResourceAsStream("/res/raw/mc");
-            byte[] buffer = new byte[is.available()];
-            is.read(buffer);
-            String str = new String(buffer);
-            is.close();
-            String[] problems = str.split(";");
-            if(id==0) id = (int)(Math.random()*problems.length);
-            Log.d("id", id+"-"+problems.length);
-            String[] problem = problems[id].trim().split("\\|");
-            question = problem[0];
-            mcAnswers = new String[4];
-            for(int i=0;i<4;i++) mcAnswers[i] = problem[i+1];
-            mcCorrectAnswer = Integer.parseInt(problem[5]);
-            hint = problem[6];
-            solution = problem[7];
-        } catch (Exception e) {
-            e.printStackTrace();
+    public static Problem byId(Context context, int type, int id) {
+        return catalog(context, type).get(id);
+    }
+
+    public static boolean hasId(Context context, int type, int id) {
+        return id >= 0 && id < catalog(context, type).size();
+    }
+
+    static synchronized List<Problem> catalog(Context context, int type) {
+        if (type == MC) {
+            if (multipleChoice == null) multipleChoice = load(context, type, R.raw.mc);
+            return multipleChoice;
+        }
+        if (type == SF) {
+            if (shortForm == null) shortForm = load(context, type, R.raw.sf);
+            return shortForm;
+        }
+        throw new IllegalArgumentException("Unknown problem type " + type);
+    }
+
+    private static List<Problem> load(Context context, int type, int resource) {
+        try (InputStream input = context.getResources().openRawResource(resource)) {
+            return parse(type, input);
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot load bundled problems", e);
         }
     }
 
-    void getSFProblem() {
-        try {
-            InputStream is = getClass().getResourceAsStream("/res/raw/sf");
-            byte[] buffer = new byte[is.available()];
-            is.read(buffer);
-            String str = new String(buffer);
-            is.close();
-            String[] problems = str.split(";");
-            if(id==0) id = (int)(Math.random()*problems.length);
-            String[] problem = problems[id].trim().split("\\|");
-            question = problem[0];
-            sfAnswer = problem[1];
-            hint = problem[2];
-            solution = problem[3];
-        } catch (Exception e) {
-            e.printStackTrace();
+    static List<Problem> parse(int type, InputStream input) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+        StringBuilder contents = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) contents.append(line).append('\n');
+        ArrayList<Problem> problems = new ArrayList<>();
+        for (String record : contents.toString().trim().split(";")) {
+            String[] fields = record.trim().split("\\|", -1);
+            if (fields.length != (type == MC ? 8 : 4)) {
+                throw new IllegalArgumentException("Malformed bundled problem " + problems.size());
+            }
+            Problem problem = new Problem(type, problems.size(), fields);
+            if (type == MC && (problem.mcCorrectAnswer < 1 || problem.mcCorrectAnswer > 4)) {
+                throw new IllegalArgumentException("Invalid answer number at " + problem.id);
+            }
+            problems.add(problem);
         }
+        return Collections.unmodifiableList(problems);
     }
 
     public boolean checkAnswer(int answer) {
-        if(problemType == MC) return answer == mcCorrectAnswer - 1;
-        else return false;
+        return problemType == MC && answer == mcCorrectAnswer - 1;
     }
 
     public boolean checkAnswer(String answer) {
-        if(problemType == SF) return answer.trim().equals(sfAnswer);
-        else return false;
+        return problemType == SF && answer != null && answer.trim().equals(sfAnswer);
     }
 }
