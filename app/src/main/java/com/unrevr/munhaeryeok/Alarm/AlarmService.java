@@ -61,7 +61,7 @@ public class AlarmService extends Service {
 
             // Even an expired/revoked delivery must satisfy startForegroundService's deadline.
             Notification.Builder starting = new Notification.Builder(this, CHANNEL_ID)
-                    .setSmallIcon(R.mipmap.ic_launcher).setContentTitle(getString(R.string.ringing_channel));
+                    .setSmallIcon(R.drawable.ic_stat_auk).setContentTitle(getString(R.string.ringing_channel));
             if (Build.VERSION.SDK_INT >= 31) starting.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_DEFERRED);
             try {
                 startForeground(-1, starting.build());
@@ -135,7 +135,7 @@ public class AlarmService extends Service {
                 PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         String name = ring.getStringExtra("name");
         Notification.Builder builder = new Notification.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_stat_auk)
                 .setContentTitle(name == null || name.isEmpty() ? getString(R.string.ringing_channel) : name)
                 .setContentText(getString(R.string.ringing_open_quiz))
                 .setCategory(Notification.CATEGORY_ALARM)

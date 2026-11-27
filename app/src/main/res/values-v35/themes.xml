@@ -1,0 +1,4 @@
+<resources>
+    <!-- Target SDK 35+ uses the platform's edge-to-edge bars and cutout policy. -->
+    <style name="Theme.Munhaeryeok" parent="SystemBars.Munhaeryeok" />
+</resources>

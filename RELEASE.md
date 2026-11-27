@@ -1,10 +1,10 @@
 # AUK Android 업데이트
 
-기존 Google Play 항목은 `com.unrevr.auk`입니다. 이 소스의 업데이트 버전은 1.0.0 (24)이며 최소 API 28, 대상 API 36입니다.
+기존 Google Play 항목은 `com.unrevr.auk`입니다. 이 소스의 업데이트 버전은 1.0.0 (25)이며 최소 API 28, 대상 API 36입니다.
 
 ## 배포 파일과 업데이트 확인
 
-1. Play Console의 모든 트랙에서 가장 높은 버전 코드를 확인합니다. 24가 이미 사용되었으면 새 빌드 전에 `app/build.gradle`에서 올립니다.
+1. Play Console의 모든 트랙에서 가장 높은 버전 코드를 확인합니다. 25가 이미 사용되었으면 새 빌드 전에 `app/build.gradle`에서 올립니다.
 2. `./gradlew :app:lintDebug :app:testDebugUnitTest :app:assembleDebugAndroidTest :app:bundleRelease`를 실행합니다. 현재 소스에서 생성한 번들은 `app/build/outputs/bundle/release/app-release.aab`입니다. 저장소의 `app/release/app-release.aab`는 이전 버전입니다.
 3. 기존 앱의 업로드 키로 번들에 서명하고 내부 테스트 트랙에 올립니다. Play에서 설치한 이전 버전으로 반복 알람과 즐겨찾기, 오답을 만든 뒤 동일 기기에서 업데이트하여 보존 여부를 확인합니다.
 4. 정시 알람·알림 허용과 거절, 전체 화면 알림이 꺼진 상태, 오프라인 시작, 화면 회전, 잠금·재부팅 시 울림을 점검합니다. 같은 분에 예약한 알람과 채점 직후 앱 프로세스가 다시 시작된 경우도 확인합니다. 실제 기기에서는 소리·진동, 화면 켜짐, 다음 회차 발화 시각을 확인합니다.

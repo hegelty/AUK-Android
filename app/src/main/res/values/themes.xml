@@ -6,7 +6,17 @@
         <item name="android:windowBackground">#f6f6f6</item>
     </style>
 
-    <style name="Theme.Munhaeryeok" parent="Base.Theme.Munhaeryeok" />
+    <style name="SystemBars.Munhaeryeok" parent="Base.Theme.Munhaeryeok">
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+
+    <!-- Android 9–14 need transparent colors to draw behind both bars. -->
+    <style name="Theme.Munhaeryeok" parent="SystemBars.Munhaeryeok">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
 
     <style name="CustomTimePicker">
         <item name="android:timePickerMode">spinner</item>

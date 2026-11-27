@@ -6,11 +6,15 @@ android {
     namespace 'com.unrevr.munhaeryeok'
     compileSdk 36
 
+    buildFeatures {
+        resValues = true
+    }
+
     defaultConfig {
         applicationId "com.unrevr.auk"
         minSdk 28
         targetSdk 36
-        versionCode 24
+        versionCode 25
         versionName "1.0.0"
         resValue "string", "app_version", versionName
 
@@ -20,6 +24,7 @@ android {
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -33,14 +38,18 @@ android {
 }
 
 // Use the same privacy notice in the APK and on the public policy page.
-def policyAssetDir = layout.buildDirectory.dir('generated/assets/privacy')
-def bundledPolicy = tasks.register('bundlePrivacyPolicy', Sync) {
-    from rootProject.file('privacy.html')
-    into policyAssetDir
+abstract class BundlePrivacyPolicy extends Sync {
+    @Internal
+    abstract DirectoryProperty getAssetDirectory()
 }
-android.sourceSets.main.assets.srcDir(policyAssetDir)
-tasks.named('preBuild') { dependsOn bundledPolicy }
 
+androidComponents.onVariants(androidComponents.selector().all()) { variant ->
+    def policy = tasks.register("bundle${variant.name.capitalize()}PrivacyPolicy", BundlePrivacyPolicy) {
+        from rootProject.file('privacy.html')
+        into assetDirectory
+    }
+    variant.sources.assets.addGeneratedSourceDirectory(policy) { it.assetDirectory }
+}
 
 // Android 16's Robolectric runtime requires Java 21.
 tasks.withType(Test).configureEach {
@@ -55,7 +64,8 @@ tasks.withType(Test).configureEach {
 dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.activity:activity:1.12.4'
+    implementation 'androidx.recyclerview:recyclerview:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.robolectric:robolectric:4.16.1'
