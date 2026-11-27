@@ -1,7 +1,6 @@
 package com.unrevr.munhaeryeok;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
 import android.app.NotificationChannel;
@@ -51,7 +50,7 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends InsetActivity {
     public static Context context;
     private boolean loadDone = false;
 
@@ -103,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        Log.d("uuid", UserInfo.id);
         setTodayContents();
         uploadScore();
 
@@ -384,7 +382,7 @@ public class MainActivity extends AppCompatActivity {
                 backgroundtask = Observable.fromCallable(() -> {
                             String res = Jsoup.connect("https://auk.hegelty.space/upload_score")
                                     .method(Connection.Method.POST)
-                                    .data("id", UserInfo.id.trim())
+                                    .data("id", userInfo.id)
                                     .data("score", String.valueOf(userInfo.score))
                                     .execute()
                                     .body();

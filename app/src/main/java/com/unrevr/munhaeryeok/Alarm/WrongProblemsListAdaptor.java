@@ -3,8 +3,6 @@ package com.unrevr.munhaeryeok.Alarm;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,62 +12,23 @@ import com.unrevr.munhaeryeok.Problem;
 import com.unrevr.munhaeryeok.R;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-public class WrongProblemsListAdaptor extends RecyclerView.Adapter<WrongProblemsListAdaptor.ViewHolder> implements Filterable {
-    private ArrayList<Problem> problemItems;
-    private ArrayList<Problem> problemItemsFull;
+public class WrongProblemsListAdaptor extends RecyclerView.Adapter<WrongProblemsListAdaptor.ViewHolder> {
+    private final List<Problem> problemItems = new ArrayList<>();
+    private List<Problem> allProblems = Collections.emptyList();
 
-    @Override
-    public Filter getFilter() {
-        return new Filter() {
-            @Override
-            protected FilterResults performFiltering(CharSequence charSequence) {
-                String query = charSequence.toString();
-                if(query.equals("0")) {
-                    problemItems = problemItemsFull;
-                } else if (query.equals(Problem.SF + "")) {
-                    problemItems = problemItemsFull;
-                    ArrayList<Problem> filteredList = new ArrayList<>();
-                    for(Problem problem : problemItems) {
-                        if(problem.problemType == Integer.parseInt(query)) {
-                            filteredList.add(problem);
-                        }
-                    }
-                    problemItems = filteredList;
-                } else {
-                    problemItems = problemItemsFull;
-                    ArrayList<Problem> filteredList = new ArrayList<>();
-                    for(Problem problem : problemItems) {
-                        if(problem.problemType == Integer.parseInt(query)) {
-                            filteredList.add(problem);
-                        }
-                    }
-                    problemItems = filteredList;
-                }
-                FilterResults filterResults = new FilterResults();
-                filterResults.values = problemItems;
-                return filterResults;
-            }
-
-            @Override
-            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-                problemItems = (ArrayList<Problem>) filterResults.values;
-                notifyDataSetChanged();
-            }
-        };
+    void setProblems(List<Problem> problems) {
+        allProblems = problems;
     }
 
-    public interface OnItemClickListener {
-        void onItemClick(int position);
-    }
-    private OnItemClickListener onItemClickListener;
-    public void setOnItemClickListener(OnItemClickListener listener) {
-        onItemClickListener = listener;
-    }
-
-    WrongProblemsListAdaptor(ArrayList<Problem> problemItems) {
-        this.problemItems = problemItems;
-        problemItemsFull = new ArrayList<>(problemItems);
+    void showType(int type) {
+        problemItems.clear();
+        for (Problem problem : allProblems) {
+            if (type == 0 || type == problem.problemType) problemItems.add(problem);
+        }
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -100,17 +59,6 @@ public class WrongProblemsListAdaptor extends RecyclerView.Adapter<WrongProblems
             problemTextView = itemView.findViewById(R.id.problemTextView);
             answerTextView = itemView.findViewById(R.id.answerTextView);
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if(onItemClickListener != null) {
-                        int position = getAdapterPosition();
-                        if(position != RecyclerView.NO_POSITION) {
-                            onItemClickListener.onItemClick(position);
-                        }
-                    }
-                }
-            });
         }
 
         void onBind(Problem problem) {
