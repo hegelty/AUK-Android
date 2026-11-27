@@ -22,6 +22,7 @@
 
             <ImageButton
                 android:id="@+id/backwardButton"
+                android:contentDescription="@string/navigate_back"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="start"
@@ -168,7 +169,6 @@
             android:layout_gravity="bottom"
             android:orientation="vertical"
             android:padding="10dp">
-            >
 
             <Button
                 android:id="@+id/deleteButton"
