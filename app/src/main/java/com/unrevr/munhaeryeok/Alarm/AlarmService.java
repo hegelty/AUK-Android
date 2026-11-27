@@ -23,17 +23,18 @@ public class AlarmService extends Service {
         String name = intent.getStringExtra("name");
         int problem_type = intent.getIntExtra("problem_type", 0);
 
-        showAlarm(id, h, m, sound, vibration, name, problem_type);
+        showAlarm(id, h, m, sound, vibration, name, problem_type, intent.getIntExtra("alarm_id", 0));
         return START_REDELIVER_INTENT; // 서비스가 종료되었을 때, 자동으로 재시작
     }
 
-    private void showAlarm(int id, int h, int m, boolean sound, boolean vibration, String name, int problem_type) {
+    private void showAlarm(int id, int h, int m, boolean sound, boolean vibration, String name, int problem_type, int alarmId) {
         Intent intent = new Intent(this, AlarmActivity.class);
         // 1: 객관, 2: 주관, 3: 전부
         if (problem_type == 1) intent.putExtra("problem_type", 1);
         else if(problem_type == 2) intent.putExtra("problem_type", 2);
         else intent.putExtra("problem_type", (int) (Math.random() * 2) + 1);
         intent.putExtra("id", id);
+        intent.putExtra("occurrence", id + ":" + alarmId);
         intent.putExtra("h", h);
         intent.putExtra("m", m);
         intent.putExtra("name", name);
