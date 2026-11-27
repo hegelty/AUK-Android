@@ -1,29 +1,21 @@
 package com.unrevr.munhaeryeok;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.Manifest;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.content.Context;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.PowerManager;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.play.core.appupdate.AppUpdateInfo;
@@ -31,52 +23,30 @@ import com.google.android.play.core.appupdate.AppUpdateManager;
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
 import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.install.model.UpdateAvailability;
-import com.gun0912.tedpermission.PermissionListener;
-import com.gun0912.tedpermission.normal.TedPermission;
 import com.unrevr.munhaeryeok.Alarm.AlarmController;
 import com.unrevr.munhaeryeok.Alarm.AlarmData;
 import com.unrevr.munhaeryeok.Alarm.AlarmListActivity;
 import com.unrevr.munhaeryeok.Alarm.WrongProblemsListActivity;
 
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.time.LocalDate;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
-    public static Context context;
-    private boolean loadDone = false;
+    private final CompositeDisposable columnRequests = new CompositeDisposable();
+    private final TodayContents[] columns = new TodayContents[2];
+    private LocalDate columnsDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        context = this;
         setContentView(R.layout.main_activity_layout);
 
         checkFirstRun();
-        checkFirstRunVersion();
-        getOverlayPermission();
-        addIgnoreBatteryOptimizationList();
-        requestAllowNotification();
         updateAppIfAvailable();
         reloadAlarms();
-        setProgressBar();
-        setNearestAlarm();
-
-        Intent kill_alarm = new Intent("alarm_killed_main");
-        sendBroadcast(kill_alarm);
-
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        NotificationChannel notificationChannel = new NotificationChannel("alarm", "alarm", NotificationManager.IMPORTANCE_DEFAULT);
-        notificationManager.createNotificationChannel(notificationChannel);
 
         findViewById(R.id.upcommingAlarm).setOnClickListener(v -> {
             Intent intent = new Intent(getApplicationContext(), AlarmListActivity.class);
@@ -102,28 +72,6 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(getApplicationContext(), WrongProblemsListActivity.class);
             startActivity(intent);
         });
-
-        Log.d("uuid", UserInfo.id);
-        setTodayContents();
-        uploadScore();
-
-        // splash screen
-        final View content = findViewById(android.R.id.content);
-        content.getViewTreeObserver().addOnPreDrawListener(
-                new ViewTreeObserver.OnPreDrawListener() {
-                    @Override
-                    public boolean onPreDraw() {
-                        // Check if the initial data is ready.
-                        if (loadDone) {
-                            // The content is ready; start drawing.
-                            content.getViewTreeObserver().removeOnPreDrawListener(this);
-                            return true;
-                        } else {
-                            // The content is not ready; suspend.
-                            return false;
-                        }
-                    }
-                });
     }
 
     void checkFirstRun() {
@@ -133,67 +81,8 @@ public class MainActivity extends AppCompatActivity {
         if(first) {
             dataController.putInt("isFirst", 1);
 
-            DataController dataCon = new DataController(getApplicationContext(), "alarm_data");
-            if(dataCon.getInt("last_alarm_id", 0) == 0) {
-                dataCon.putInt("last_alarm_id", 0);
-                dataCon.putString("alarm_list", "");
-            }
-
             UserInfo userInfo = UserInfo.getInstance(getApplicationContext());
             userInfo.init();
-        }
-    }
-
-    void checkFirstRunVersion() {
-        DataController dataController = new DataController(getApplicationContext(), "isFirst");
-        boolean first = dataController.getInt(String.valueOf(R.string.app_version), 0) == 0;
-        Log.d("first", String.valueOf(first));
-    }
-
-    void getOverlayPermission() {
-        if (!Settings.canDrawOverlays(this)) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("권한이 필요합니다.").setMessage("\"다른 앱 위에 그리기\" 권한이 필요합니다.");
-            builder.setPositiveButton("예", (dialog, id) -> {
-                        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
-                        startActivity(intent);
-                    }
-            ).setNegativeButton("아니오", (dialog, id) -> finish()).setCancelable(false);
-            builder.create().show();
-        }
-    }
-
-    void addIgnoreBatteryOptimizationList() {
-        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        if(!powerManager.isIgnoringBatteryOptimizations(getPackageName())) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("권한이 필요합니다.").setMessage("알람 서비스 제공을 위해 이 어플을 \"배터리 사용량 최적화\" 목록에서 제외해야 합니다.");
-            builder.setPositiveButton("예", (dialog, id) -> {
-                        Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + getPackageName()));
-                        startActivity(intent);
-                    }
-            ).setNegativeButton("아니오", (dialog, id) -> finish()).setCancelable(false);
-            builder.create().show();
-        }
-    }
-
-    void requestAllowNotification() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            TedPermission.create()
-                    .setPermissionListener(new PermissionListener() {
-                        @Override
-                        public void onPermissionGranted() {
-                            // do nothing
-                        }
-
-                        @Override
-                        public void onPermissionDenied(List<String> deniedPermissions) {
-                            // do nothing
-                        }
-                    })
-                    .setDeniedMessage("만약 권한을 허용하지 않는다면, 재부팅 시 자동으로 알람이 설정되지 않을 수 있습니다. [설정] > [알림]에서 알람 권한을 허용해주세요.")
-                    .setPermissions(Manifest.permission.POST_NOTIFICATIONS)
-                    .check();
         }
     }
 
@@ -201,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
         AppUpdateManager appUpdateManager = AppUpdateManagerFactory.create(getApplicationContext());
         Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
 
-        appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
+        appUpdateInfoTask.addOnSuccessListener(this, appUpdateInfo -> {
             if(appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
                     && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
                 try {
@@ -214,20 +103,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connectivityManager = getSystemService(ConnectivityManager.class);
         Network network = connectivityManager.getActiveNetwork();
         NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
         return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
     }
 
     void setProgressBar() {
-        UserInfo userInfo = new UserInfo(getApplicationContext());
+        UserInfo userInfo = UserInfo.getInstance(getApplicationContext());
         userInfo.getUserInfo();
         ProgressBar progressBar = findViewById(R.id.progressBar);
         TextView progressText = findViewById(R.id.progressText);
 
         progressBar.setProgress(userInfo.score);
         progressText.setText(userInfo.score + " / 100");
+        if (isNetworkAvailable()) ScoreSharing.uploadIfDue(this, userInfo.id.trim(), userInfo.score);
     }
 
     void setNearestAlarm() {
@@ -298,113 +188,66 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    void setTodayContents() {
-        AtomicBoolean contents1Loaded = new AtomicBoolean(false);
-        AtomicBoolean contents2Loaded = new AtomicBoolean(false);
-
-        TextView todayTitle1 = findViewById(R.id.todayTitle1);
-        TextView todayTitle2 = findViewById(R.id.todayTitle2);
-        TextView author1 = findViewById(R.id.author1);
-        TextView author2 = findViewById(R.id.author2);
-        TextView todayContent1 = findViewById(R.id.todayContent1);
-        TextView todayContent2 = findViewById(R.id.todayContent2);
-        Button readButton1 = findViewById(R.id.readButton1);
-        Button readButton2 = findViewById(R.id.readButton2);
-
-        Disposable backgroundtask = null;
-        if(isNetworkAvailable()) {
-            backgroundtask = Observable.fromCallable(() -> {
-                TodayContents todayContents = new TodayContents();
-                todayContents.getColumn(0);
-
-                return todayContents;
-            })
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe((todayContents) -> {
-                        todayTitle1.setText(todayContents.title);
-                        author1.setText(todayContents.author);
-                        todayContent1.setText(todayContents.content);
-                        TodayContents finalTodayContents = todayContents;
-                        readButton1.setOnClickListener(v -> {
-                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(finalTodayContents.url));
-                            startActivity(intent);
-                        });
-
-                        contents1Loaded.set(true);
-                        if(contents2Loaded.get()) {
-                            loadDone = true;
-                        }
-            });
-
-            backgroundtask = Observable.fromCallable(() -> {
-                        TodayContents todayContents = new TodayContents();
-                        todayContents.getColumn(1);
-
-                        return todayContents;
-                    })
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe((todayContents) -> {
-                        todayTitle2.setText(todayContents.title);
-                        author2.setText(todayContents.author);
-                        todayContent2.setText(todayContents.content);
-                        TodayContents finalTodayContents = todayContents;
-                        readButton2.setOnClickListener(v -> {
-                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(finalTodayContents.url));
-                            startActivity(intent);
-                        });
-
-                        contents2Loaded.set(true);
-                        if(contents1Loaded.get()) {
-                            loadDone = true;
-                        }
-                    });
-        } else {
-            todayTitle1.setText("오늘의 문해력");
-            todayTitle2.setText("오늘의 문해력");
-            author1.setText("인터넷 연결이 필요합니다.");
-            author2.setText("인터넷 연결이 필요합니다.");
-            todayContent1.setText("인터넷 연결이 필요합니다.");
-            todayContent2.setText("인터넷 연결이 필요합니다.");
-            readButton1.setOnClickListener(v -> {});
-            readButton2.setOnClickListener(v -> {});
+    @Override
+    protected void onStart() {
+        super.onStart();
+        LocalDate today = LocalDate.now();
+        if (!today.equals(columnsDate)) {
+            columnsDate = today;
+            columns[0] = null;
+            columns[1] = null;
+        }
+        for (int i = 0; i < columns.length; i++) {
+            if (columns[i] == null) loadColumn(i);
         }
     }
 
-    void uploadScore() {
-        Date date = new Date();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
-        String today = simpleDateFormat.format(date);
-        if(!getSharedPreferences("uploaded", MODE_PRIVATE).getString("date", "0").equals(today)) {
-            Disposable backgroundtask = null;
-            if (isNetworkAvailable()) {
-                UserInfo userInfo = UserInfo.getInstance(getApplicationContext());
-                userInfo.getUserInfo();
-                backgroundtask = Observable.fromCallable(() -> {
-                            String res = Jsoup.connect("https://auk.hegelty.space/upload_score")
-                                    .method(Connection.Method.POST)
-                                    .data("id", UserInfo.id.trim())
-                                    .data("score", String.valueOf(userInfo.score))
-                                    .execute()
-                                    .body();
-                            if (res.equals("success")) {
-                                SharedPreferences.Editor editor = getSharedPreferences("uploaded", MODE_PRIVATE).edit();
-                                editor.putString("date", today);
-                                editor.apply();
-                            }
-                            return res;
-                        })
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .onErrorReturn((e) -> {
-                            Log.d("MainActivity", "error: " + e.toString());
-                            return null;
-                        })
-                        .subscribe((res) -> {
-                            Log.d("uploadScore", res);
-                        });
-            }
+    @Override
+    protected void onStop() {
+        columnRequests.clear();
+        super.onStop();
+    }
+
+    private void loadColumn(int index) {
+        TextView title = findViewById(index == 0 ? R.id.todayTitle1 : R.id.todayTitle2);
+        TextView author = findViewById(index == 0 ? R.id.author1 : R.id.author2);
+        TextView content = findViewById(index == 0 ? R.id.todayContent1 : R.id.todayContent2);
+        Button button = findViewById(index == 0 ? R.id.readButton1 : R.id.readButton2);
+        title.setText(R.string.today_column);
+        author.setText("");
+        button.setText(R.string.retry_column);
+        button.setOnClickListener(v -> loadColumn(index));
+
+        if (!isNetworkAvailable()) {
+            content.setText(R.string.column_offline);
+            button.setEnabled(true);
+            return;
+        }
+
+        content.setText(R.string.column_loading);
+        button.setEnabled(false);
+        columnRequests.add(TodayContents.fetch(index)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(column -> {
+                    columns[index] = column;
+                    title.setText(column.title);
+                    author.setText(column.author);
+                    content.setText(column.content);
+                    button.setEnabled(true);
+                    button.setText(R.string.read_column);
+                    button.setOnClickListener(v -> openColumn(column));
+                }, error -> {
+                    content.setText(R.string.column_unavailable);
+                    button.setEnabled(true);
+                }));
+    }
+
+    private void openColumn(TodayContents column) {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(column.url)));
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, R.string.no_browser, Toast.LENGTH_SHORT).show();
         }
     }
 

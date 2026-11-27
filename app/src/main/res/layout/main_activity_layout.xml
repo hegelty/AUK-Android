@@ -266,7 +266,7 @@
                         android:layout_marginStart="15dp"
                         android:layout_marginEnd="15dp"
                         android:layout_marginTop="10dp"
-                        android:text="전세의 배신"
+                        tools:text="전세의 배신"
                         android:textColor="@color/tblack"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -277,7 +277,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="15dp"
                         android:layout_marginEnd="15dp"
-                        android:text="심윤희 칼럼"
+                        tools:text="심윤희 칼럼"
                         android:textColor="@color/gray" />
 
                     <TextView
@@ -286,7 +286,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="18dp"
                         android:layout_marginEnd="18dp"
-                        android:text=' "내 전세금은 돌려받을 수 있는 건가" "집주인을 어떻게 믿고 거액의 전세금을 맡기냐". 인천 미추홀구를 비롯해 전국에서 전세사기가 동시다발적...'
+                        tools:text=' "내 전세금은 돌려받을 수 있는 건가" "집주인을 어떻게 믿고 거액의 전세금을 맡기냐". 인천 미추홀구를 비롯해 전국에서 전세사기가 동시다발적...'
                         android:textColor="@color/tblack"
                         android:textSize="16sp" />
 
@@ -324,7 +324,7 @@
                         android:layout_marginStart="15dp"
                         android:layout_marginEnd="15dp"
                         android:layout_marginTop="10dp"
-                        android:text="전세의 배신"
+                        tools:text="전세의 배신"
                         android:textColor="@color/tblack"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -335,7 +335,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="15dp"
                         android:layout_marginEnd="15dp"
-                        android:text="심윤희 칼럼"
+                        tools:text="심윤희 칼럼"
                         android:textColor="@color/gray" />
 
                     <TextView
@@ -344,7 +344,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="18dp"
                         android:layout_marginEnd="18dp"
-                        android:text=' "내 전세금은 돌려받을 수 있는 건가" "집주인을 어떻게 믿고 거액의 전세금을 맡기냐". 인천 미추홀구를 비롯해 전국에서 전세사기가 동시다발적...'
+                        tools:text=' "내 전세금은 돌려받을 수 있는 건가" "집주인을 어떻게 믿고 거액의 전세금을 맡기냐". 인천 미추홀구를 비롯해 전국에서 전세사기가 동시다발적...'
                         android:textColor="@color/tblack"
                         android:textSize="16sp" />
 

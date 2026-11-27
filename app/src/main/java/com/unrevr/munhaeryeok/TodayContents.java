@@ -1,35 +1,50 @@
 package com.unrevr.munhaeryeok;
 
-import android.content.Context;
-import android.util.Log;
-
+import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
-public class TodayContents {
-    public String title;
-    public String content;
-    public String author;
-    public String url;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
-    public void getColumn(int num) {
-        try {
-            String res = Jsoup.connect("https://auk.hegelty.space/column")
-                    .data("id", Integer.toString(num))
-                    .method(Connection.Method.GET)
-                    .ignoreContentType(true)
-                    .execute()
-                    .body();
-            JSONObject jsonObject = new JSONObject(res);
-            this.title = jsonObject.getString("title");
-            this.content = jsonObject.getString("description");
-            this.author = jsonObject.getString("author");
-            this.url = jsonObject.getString("link");
-            Log.d("TodayContents", "getColumn: " + this.title + " " + this.content + " " + this.author + " " + this.url);
-        } catch (Exception e) {
-            e.printStackTrace();
+import io.reactivex.rxjava3.core.Single;
+
+final class TodayContents {
+    final String title;
+    final String content;
+    final String author;
+    final String url;
+
+    private TodayContents(JSONObject column) throws JSONException, URISyntaxException {
+        title = column.getString("title");
+        content = column.getString("description");
+        author = column.getString("author");
+        url = column.getString("link");
+        URI link = new URI(url);
+        if (!("https".equalsIgnoreCase(link.getScheme()) || "http".equalsIgnoreCase(link.getScheme()))
+                || link.getHost() == null) {
+            throw new JSONException("Invalid article URL");
         }
     }
 
+    static Single<TodayContents> fetch(int index) {
+        return Single.create(emitter -> {
+            try {
+                emitter.onSuccess(request(index));
+            } catch (IOException | JSONException | URISyntaxException error) {
+                emitter.tryOnError(error);
+            }
+        });
+    }
+
+    private static TodayContents request(int index) throws IOException, JSONException, URISyntaxException {
+        String body = Jsoup.connect("https://auk.hegelty.space/column")
+                .data("id", Integer.toString(index))
+                .timeout(8000)
+                .ignoreContentType(true)
+                .execute()
+                .body();
+        return new TodayContents(new JSONObject(body));
+    }
 }
