@@ -185,7 +185,9 @@ public final class AlarmController {
             // and let the receiver claim the due occurrence exactly once.
             long previousDue = row.getLong(9);
             if (restoring && previousDue <= after && previousDue > after - 60_000) due = previousDue;
-            if (!force && due == previousDue) return;
+            // A restored database can contain future due times without any platform intents.
+            if (!force && due == previousDue && PendingIntent.getBroadcast(context, alarm.id, ring,
+                    PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE) != null) return;
             if (due != previousDue) token = token == Integer.MAX_VALUE ? 1 : token + 1;
             ring.putExtra("id", alarm.id).putExtra("alarm_id", token)
                     .putExtra("h", alarm.h).putExtra("m", alarm.m).putExtra("name", alarm.name)
